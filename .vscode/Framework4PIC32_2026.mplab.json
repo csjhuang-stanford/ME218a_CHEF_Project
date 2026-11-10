@@ -1,0 +1,65 @@
+{
+    "version": "1.9",
+    "configurations": [
+        {
+            "name": "default",
+            "id": "",
+            "device": "PIC32MX170F256B",
+            "imagePath": "./out/Framework4PIC32_2026/default.elf",
+            "toolProperties": "default-tool-base",
+            "tool": "Snap",
+            "packs": [
+                {
+                    "name": "PIC32MX_DFP",
+                    "vendor": "Microchip",
+                    "version": "1.7.380"
+                }
+            ],
+            "fileSet": "default",
+            "toolchain": "default-XC32",
+            "userVariables": "default-uservariables"
+        }
+    ],
+    "propertyGroups": [
+        {
+            "name": "default-uservariables",
+            "type": "uservariables",
+            "properties": {}
+        },
+        {
+            "name": "default-XC32",
+            "type": "toolchain",
+            "provider": "microchip.toolchains:xc32@6.00",
+            "properties": {
+                "global.common-include-directories": [
+                    "${workspaceFolder}/FrameworkHeaders",
+                    "${workspaceFolder}/FrameworkSource",
+                    "${workspaceFolder}/ProjectHeaders",
+                    "${workspaceFolder}/ProjectSource"
+                ]
+            }
+        },
+        {
+            "name": "default-tool-base",
+            "type": "tool",
+            "properties": {}
+        }
+    ],
+    "fileSets": [
+        {
+            "name": "default",
+            "files": [
+                {
+                    "include": "**/*",
+                    "exclude": "**/@(build|_build|out|cmake|.vscode)/**/*"
+                },
+                "FrameworkHeaders/*",
+                "ProjectHeaders/*",
+                {
+                    "include": "",
+                    "exclude": "FrameworkSource/ES_ShortTimer.c"
+                }
+            ]
+        }
+    ]
+}

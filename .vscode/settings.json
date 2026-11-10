@@ -1,0 +1,16 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/cmake/Framework4PIC32_2026/default",
+    "memory-inspector.debugTypes": [
+        "arm-debugger",
+        "embedded-debug",
+        "gdb",
+        "gdbtarget",
+        "mplab-core-da"
+    ],
+    "mplab.clangd.compileCommandsDir": "${workspaceFolder}\\_build\\Framework4PIC32_2026\\default",
+    "mplab.clangd.arguments": [
+        "--header-insertion=never"
+    ],
+    "mplab.clangd.path": "c:\\Program Files\\Microchip\\xc32\\v6.00\\bin\\xc32-clangd.exe",
+    "C_Cpp.intelliSenseEngine": "disabled"
+}

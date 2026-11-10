@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<project>                                  
+  <executable name="C:\Users\cindy\Downloads\Framework4PIC32_2026_Lab3_Part4\out\Framework4PIC32_2026\production\default-production.elf">                 
+    <memory name="program">                 
+      <units>bytes</units>                 
+      <length>263312</length>                 
+      <used>42459</used>                     
+      <free>220853</free>                     
+    </memory>                              
+    <memory name="data">              
+      <units>bytes</units>                 
+      <length>65536</length>                 
+      <used>1696</used>                     
+      <free>63840</free>                     
+    </memory>                              
+  </executable>                            
+</project>                                 
