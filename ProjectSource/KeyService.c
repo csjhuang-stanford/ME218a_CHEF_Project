@@ -43,7 +43,7 @@ Module
 #include "ES_Port.h"
 #include "terminal.h"
 #include "dbprintf.h"
-#include "LEDServiceFSM.h" // Part 4.2)
+// #include "LEDServiceFSM.h" // Part 4.2)
 
 /*----------------------------- Module Defines ----------------------------*/
 // Part 3.5)

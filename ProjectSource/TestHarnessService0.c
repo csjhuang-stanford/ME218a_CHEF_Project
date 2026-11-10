@@ -99,6 +99,9 @@ bool InitTestHarnessService0(uint8_t Priority)
   ES_Event_t ThisEvent;
 
   MyPriority = Priority;
+  // CHEF_Project_LED_1_Test
+  // TRISBbits.TRISB8 = 0;     // RB8 as output (LED test)
+  // LATBbits.LATB8 = 0;       // start with the light off
 
   // When doing testing, it is useful to announce just which program
   // is running.
@@ -196,9 +199,18 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
       DB_printf("\rES_INIT received in Service %d\r\n", MyPriority);
     }
     break;
+    // case ES_TIMEOUT:   // re-start timer & announce
+    // {
+    //   ES_Timer_InitTimer(SERVICE0_TIMER, FIVE_SEC);
+    //   DB_printf("ES_TIMEOUT received from Timer %d in Service %d\r\n",
+    //       ThisEvent.EventParam, MyPriority);
+    // }
+    // break;
+    // CHEF_Project_LED_1
     case ES_TIMEOUT:   // re-start timer & announce
     {
       ES_Timer_InitTimer(SERVICE0_TIMER, FIVE_SEC);
+      // LATBbits.LATB8 = !LATBbits.LATB8;    // LED test: toggle every timeout
       DB_printf("ES_TIMEOUT received from Timer %d in Service %d\r\n",
           ThisEvent.EventParam, MyPriority);
     }

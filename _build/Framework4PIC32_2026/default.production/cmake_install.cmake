@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/cindy/Downloads/Framework4PIC32_2026_Lab3_Part4/cmake/Framework4PIC32_2026/default.production
+# Install script for directory: C:/ME218/CHEF_Project/cmake/Framework4PIC32_2026/default.production
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -40,7 +40,7 @@ endif()
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "C:/Users/cindy/Downloads/Framework4PIC32_2026_Lab3_Part4/_build/Framework4PIC32_2026/default.production/install_local_manifest.txt"
+  file(WRITE "C:/ME218/CHEF_Project/_build/Framework4PIC32_2026/default.production/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()
 if(CMAKE_INSTALL_COMPONENT)
@@ -56,6 +56,6 @@ else()
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "C:/Users/cindy/Downloads/Framework4PIC32_2026_Lab3_Part4/_build/Framework4PIC32_2026/default.production/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "C:/ME218/CHEF_Project/_build/Framework4PIC32_2026/default.production/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

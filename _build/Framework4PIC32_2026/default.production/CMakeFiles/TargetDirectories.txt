@@ -1,5 +1,5 @@
-C:/Users/cindy/Downloads/Framework4PIC32_2026_Lab3_Part4/_build/Framework4PIC32_2026/default.production/CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir
-C:/Users/cindy/Downloads/Framework4PIC32_2026_Lab3_Part4/_build/Framework4PIC32_2026/default.production/CMakeFiles/Framework4PIC32_2026_default_image_EUU7hXz6.dir
-C:/Users/cindy/Downloads/Framework4PIC32_2026_Lab3_Part4/_build/Framework4PIC32_2026/default.production/CMakeFiles/Framework4PIC32_2026_default_Bin2Hex.dir
-C:/Users/cindy/Downloads/Framework4PIC32_2026_Lab3_Part4/_build/Framework4PIC32_2026/default.production/CMakeFiles/edit_cache.dir
-C:/Users/cindy/Downloads/Framework4PIC32_2026_Lab3_Part4/_build/Framework4PIC32_2026/default.production/CMakeFiles/rebuild_cache.dir
+C:/ME218/CHEF_Project/_build/Framework4PIC32_2026/default.production/CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir
+C:/ME218/CHEF_Project/_build/Framework4PIC32_2026/default.production/CMakeFiles/Framework4PIC32_2026_default_image_f4RQWlgW.dir
+C:/ME218/CHEF_Project/_build/Framework4PIC32_2026/default.production/CMakeFiles/Framework4PIC32_2026_default_Bin2Hex.dir
+C:/ME218/CHEF_Project/_build/Framework4PIC32_2026/default.production/CMakeFiles/edit_cache.dir
+C:/ME218/CHEF_Project/_build/Framework4PIC32_2026/default.production/CMakeFiles/rebuild_cache.dir

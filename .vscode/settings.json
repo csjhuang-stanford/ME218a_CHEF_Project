@@ -7,7 +7,7 @@
         "gdbtarget",
         "mplab-core-da"
     ],
-    "mplab.clangd.compileCommandsDir": "${workspaceFolder}\\_build\\Framework4PIC32_2026\\default",
+    "mplab.clangd.compileCommandsDir": "${workspaceFolder}/_build/Framework4PIC32_2026/default",
     "mplab.clangd.arguments": [
         "--header-insertion=never"
     ],

@@ -35,7 +35,8 @@
 // a particular application. It will vary in value from 1 to MAX_NUM_SERVICES
 // #define NUM_SERVICES 2 // Part 3.5) 
 // #define NUM_SERVICES 3 // Part 4.2) 
-#define NUM_SERVICES 4 // Part 4.3) 
+// #define NUM_SERVICES 4 // Part 4.3)
+#define NUM_SERVICES 3 // CHEF: Service 0, KeyService, TaskService
 
 /****************************************************************************/
 // These are the definitions for Service 0, the lowest priority service.
@@ -72,26 +73,26 @@
 // These are the definitions for Service 2
 #if NUM_SERVICES > 2
 // the header file with the public function prototypes
-#define SERV_2_HEADER "LEDServiceFSM.h" // Part 4.2)
+#define SERV_2_HEADER "TaskService.h"   // CHEF (was LEDServiceFSM, Lab 3)
 // the name of the Init function
-#define SERV_2_INIT InitLEDServiceFSM // Part 4.2)
+#define SERV_2_INIT InitTaskService
 // the name of the run function
-#define SERV_2_RUN RunLEDServiceFSM // Part 4.2)
+#define SERV_2_RUN RunTaskService
 // How big should this services Queue be?
-#define SERV_2_QUEUE_SIZE 5 // Part 4.2)
+#define SERV_2_QUEUE_SIZE 5
 #endif
 
 /****************************************************************************/
 // These are the definitions for Service 3
 #if NUM_SERVICES > 3
 // the header file with the public function prototypes
-#define SERV_3_HEADER "MessageService.h" // Part 4.3)
+#define SERV_3_HEADER "TestHarnessService3.h"
 // the name of the Init function
-#define SERV_3_INIT InitMessageService // Part 4.3) 
+#define SERV_3_INIT InitTestHarnessService3
 // the name of the run function
-#define SERV_3_RUN RunMessageService // Part 4.3)
+#define SERV_3_RUN RunTestHarnessService3
 // How big should this services Queue be?
-#define SERV_3_QUEUE_SIZE 5 // Part 4.3)    
+#define SERV_3_QUEUE_SIZE 3
 #endif
 
 /****************************************************************************/
@@ -327,9 +328,9 @@ typedef enum
 #define TIMER10_RESP_FUNC TIMER_UNUSED
 #define TIMER11_RESP_FUNC TIMER_UNUSED
 #define TIMER12_RESP_FUNC TIMER_UNUSED
-#define TIMER13_RESP_FUNC TIMER_UNUSED
-// #define TIMER14_RESP_FUNC TIMER_UNUSED
-#define TIMER14_RESP_FUNC PostMessageService     // Part 4.3)
+// used are defined below
+#define TIMER13_RESP_FUNC PostTaskService    // TaskService blink timer
+#define TIMER14_RESP_FUNC TIMER_UNUSED            // (was MessageService, Lab 3)
 #define TIMER15_RESP_FUNC PostTestHarnessService0
 
 /****************************************************************************/
@@ -340,6 +341,6 @@ typedef enum
 // These symbolic names should be changed to be relevant to your application
 
 #define SERVICE0_TIMER 15
-#define MESSAGE_TIMER 14    // Part 4.3)
+#define TASK_TIMER 13       // CHEF_Project_LED_1
 
 #endif /* ES_CONFIGURE_H */
