@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Framework4PIC32_2026: default",
+            "type": "mplab-core-da",
+            "request": "launch",
+            "project": "Framework4PIC32_2026",
+            "configuration": "default",
+            "stopOnEntry": true,
+            "preLaunchTask": "Framework4PIC32_2026: default - Build",
+            "program": "${workspaceFolder}/out/Framework4PIC32_2026/default.elf"
+        },
+        {
+            "name": "Program Framework4PIC32_2026: default - Production",
+            "type": "mplab-core-da",
+            "request": "launch",
+            "project": "Framework4PIC32_2026",
+            "configuration": "default",
+            "noDebug": true,
+            "preLaunchTask": "Framework4PIC32_2026: default - Build (Production)",
+            "program": "${workspaceFolder}/out/Framework4PIC32_2026/production/default-production.hex"
+        }
+    ]
+}

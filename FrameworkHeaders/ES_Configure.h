@@ -271,7 +271,9 @@ typedef enum
   ES_KEY_A_PRESSED,         /* Part 3.5): 'a' key received by KeyService */
   ES_KEY_B_PRESSED,         /* Part 3.5): 'b' key received by KeyService */
   ES_ADD_CHAR_TO_DISPLAY,   /* Part 4.2): EventParam = character to add */
-  ES_ROW_UPDATE_COMPLETE    /* Part 4.2): row sent, HAL ready for next row */
+  ES_ROW_UPDATE_COMPLETE,   /* Part 4.2): row sent, HAL ready for next row */
+  ES_BEAM_BROKEN,           /* CHEF Task 2: beam went intact -> broken (H->L) */
+  ES_SWITCH_CHANGED         /* CHEF: rocker switch changed, param 1=closed 0=open */
 }ES_EventType_t;
 
 /****************************************************************************/
@@ -306,7 +308,9 @@ typedef enum
 
 /****************************************************************************/
 // This is the list of event checking functions
-#define EVENT_CHECK_LIST Check4Keystroke
+// Check4BeamBreak left out until the beam sensor is wired (RB5 floats)
+#define EVENT_CHECK_LIST Check4Keystroke, Check4RockerSwitch
+// #define EVENT_CHECK_LIST Check4Keystroke, Check4BeamBreak, Check4RockerSwitch
 
 /****************************************************************************/
 // These are the definitions for the post functions to be executed when the
@@ -327,9 +331,9 @@ typedef enum
 #define TIMER9_RESP_FUNC TIMER_UNUSED
 #define TIMER10_RESP_FUNC TIMER_UNUSED
 #define TIMER11_RESP_FUNC TIMER_UNUSED
-#define TIMER12_RESP_FUNC TIMER_UNUSED
+#define TIMER12_RESP_FUNC PostTaskService    // CHEF Task 2 print timer
 // used are defined below
-#define TIMER13_RESP_FUNC PostTaskService    // TaskService blink timer
+#define TIMER13_RESP_FUNC TIMER_UNUSED            // (was TaskService blink timer)
 #define TIMER14_RESP_FUNC TIMER_UNUSED            // (was MessageService, Lab 3)
 #define TIMER15_RESP_FUNC PostTestHarnessService0
 
@@ -341,6 +345,6 @@ typedef enum
 // These symbolic names should be changed to be relevant to your application
 
 #define SERVICE0_TIMER 15
-#define TASK_TIMER 13       // CHEF_Project_LED_1
+#define TASK2_PRINT_TIMER 12  // CHEF Task 2: periodic numSwipes print
 
 #endif /* ES_CONFIGURE_H */

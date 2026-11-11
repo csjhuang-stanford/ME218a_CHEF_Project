@@ -67,6 +67,12 @@
 },
 {
   "directory": "C:/ME218/CHEF_Project/_build/Framework4PIC32_2026/default.production",
+  "command": "\"c:\\Program Files\\Microchip\\xc32\\v6.00\\bin\\xc32-gcc.exe\" -DXPRJ_default=default -D__MPLAB_DEBUGGER_SNAP=1 -Ic:/ME218/CHEF_Project/FrameworkHeaders -Ic:/ME218/CHEF_Project/FrameworkSource -Ic:/ME218/CHEF_Project/ProjectHeaders -Ic:/ME218/CHEF_Project/ProjectSource -x c -fdiagnostics-color=always -g -x c -c -mprocessor=32MX170F256B -mdfp=C:/Users/cindy/.mchp_packs/Microchip/PIC32MX_DFP/1.7.380 -o CMakeFiles\\Framework4PIC32_2026_default_default_XC32_compile.dir\\C_\\ME218\\CHEF_Project\\ProjectSource\\BeamBreak.c.o -c C:\\ME218\\CHEF_Project\\ProjectSource\\BeamBreak.c",
+  "file": "C:/ME218/CHEF_Project/ProjectSource/BeamBreak.c",
+  "output": "C:/ME218/CHEF_Project/_build/Framework4PIC32_2026/default.production/CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/BeamBreak.c.o"
+},
+{
+  "directory": "C:/ME218/CHEF_Project/_build/Framework4PIC32_2026/default.production",
   "command": "\"c:\\Program Files\\Microchip\\xc32\\v6.00\\bin\\xc32-gcc.exe\" -DXPRJ_default=default -D__MPLAB_DEBUGGER_SNAP=1 -Ic:/ME218/CHEF_Project/FrameworkHeaders -Ic:/ME218/CHEF_Project/FrameworkSource -Ic:/ME218/CHEF_Project/ProjectHeaders -Ic:/ME218/CHEF_Project/ProjectSource -x c -fdiagnostics-color=always -g -x c -c -mprocessor=32MX170F256B -mdfp=C:/Users/cindy/.mchp_packs/Microchip/PIC32MX_DFP/1.7.380 -o CMakeFiles\\Framework4PIC32_2026_default_default_XC32_compile.dir\\C_\\ME218\\CHEF_Project\\ProjectSource\\EventCheckers.c.o -c C:\\ME218\\CHEF_Project\\ProjectSource\\EventCheckers.c",
   "file": "C:/ME218/CHEF_Project/ProjectSource/EventCheckers.c",
   "output": "C:/ME218/CHEF_Project/_build/Framework4PIC32_2026/default.production/CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/EventCheckers.c.o"
@@ -82,6 +88,12 @@
   "command": "\"c:\\Program Files\\Microchip\\xc32\\v6.00\\bin\\xc32-gcc.exe\" -DXPRJ_default=default -D__MPLAB_DEBUGGER_SNAP=1 -Ic:/ME218/CHEF_Project/FrameworkHeaders -Ic:/ME218/CHEF_Project/FrameworkSource -Ic:/ME218/CHEF_Project/ProjectHeaders -Ic:/ME218/CHEF_Project/ProjectSource -x c -fdiagnostics-color=always -g -x c -c -mprocessor=32MX170F256B -mdfp=C:/Users/cindy/.mchp_packs/Microchip/PIC32MX_DFP/1.7.380 -o CMakeFiles\\Framework4PIC32_2026_default_default_XC32_compile.dir\\C_\\ME218\\CHEF_Project\\ProjectSource\\PIC32_SPI_HAL_Starter.c.o -c C:\\ME218\\CHEF_Project\\ProjectSource\\PIC32_SPI_HAL_Starter.c",
   "file": "C:/ME218/CHEF_Project/ProjectSource/PIC32_SPI_HAL_Starter.c",
   "output": "C:/ME218/CHEF_Project/_build/Framework4PIC32_2026/default.production/CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/PIC32_SPI_HAL_Starter.c.o"
+},
+{
+  "directory": "C:/ME218/CHEF_Project/_build/Framework4PIC32_2026/default.production",
+  "command": "\"c:\\Program Files\\Microchip\\xc32\\v6.00\\bin\\xc32-gcc.exe\" -DXPRJ_default=default -D__MPLAB_DEBUGGER_SNAP=1 -Ic:/ME218/CHEF_Project/FrameworkHeaders -Ic:/ME218/CHEF_Project/FrameworkSource -Ic:/ME218/CHEF_Project/ProjectHeaders -Ic:/ME218/CHEF_Project/ProjectSource -x c -fdiagnostics-color=always -g -x c -c -mprocessor=32MX170F256B -mdfp=C:/Users/cindy/.mchp_packs/Microchip/PIC32MX_DFP/1.7.380 -o CMakeFiles\\Framework4PIC32_2026_default_default_XC32_compile.dir\\C_\\ME218\\CHEF_Project\\ProjectSource\\RockerSwitch.c.o -c C:\\ME218\\CHEF_Project\\ProjectSource\\RockerSwitch.c",
+  "file": "C:/ME218/CHEF_Project/ProjectSource/RockerSwitch.c",
+  "output": "C:/ME218/CHEF_Project/_build/Framework4PIC32_2026/default.production/CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/RockerSwitch.c.o"
 },
 {
   "directory": "C:/ME218/CHEF_Project/_build/Framework4PIC32_2026/default.production",
