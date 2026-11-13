@@ -42,6 +42,7 @@
 #include "ES_Port.h"
 #include "terminal.h"
 #include "dbprintf.h"
+#include "EventPrint.h"
 #include "PWM_PIC32.h"     // Jay: buzzer + servo PWM
 #include "TaskService.h"   // QueryTask2Running(), QueryCurrentTask(): servo modes
 
@@ -52,7 +53,12 @@
 #define TWO_SEC (ONE_SEC * 2)
 #define FIVE_SEC (ONE_SEC * 5)
 #define BEEP_FREQ     2000     // Hz, "task complete" beep
-#define BEEP_DURATION 1000     // ms (1 second)
+#define BEEP_DURATION 500     // ms (1 second)
+// 1 = show the framework test-harness prints (banner, key echo, timer
+// announcements), 0 = hide them so only the game prints show
+#define SHOW_DEBUG_PRINTS 0
+
+#define BUZZER_ON     false     // true = real beep, false = print "BEEP!" only
 
 // Servo pulse widths in PWM ticks (2.5 MHz: 2500 = 1 ms)
 // For continuous-rotation servos: 1.5 ms = stop, 2 ms = full speed one way,
@@ -140,11 +146,35 @@ static const MelodyNote_t Melody[] = {
 
 // Buzzer on at BEEP_FREQ; BUZZER_TIMER turns it off after BEEP_DURATION.
 // A second completion during a beep just restarts the 1 s.
+// With BUZZER_ON false (quiet debugging) it only prints "BEEP!".
 static void StartBeep(void)
 {
-  PWMSetup_SetFreqOnTimer(BEEP_FREQ, _Timer2_);
-  PWMOperate_SetDutyOnChannel(50, 1);
-  ES_Timer_InitTimer(BUZZER_TIMER, BEEP_DURATION);
+  if (BUZZER_ON)
+  {
+    PWMSetup_SetFreqOnTimer(BEEP_FREQ, _Timer2_);
+    PWMOperate_SetDutyOnChannel(50, 1);
+    ES_Timer_InitTimer(BUZZER_TIMER, BEEP_DURATION);
+  }
+  else
+  {
+    DB_printf("BEEP!\r\n");
+  }
+}
+
+// Game over: twice as long as a task beep.
+// With BUZZER_ON false it only prints "BEEP--------".
+static void StartLongBeep(void)
+{
+  if (BUZZER_ON)
+  {
+    PWMSetup_SetFreqOnTimer(BEEP_FREQ, _Timer2_);
+    PWMOperate_SetDutyOnChannel(50, 1);
+    ES_Timer_InitTimer(BUZZER_TIMER, 2 * BEEP_DURATION);
+  }
+  else
+  {
+    DB_printf("BEEP--------\r\n");
+  }
 }
 
 static void StopBeep(void)
@@ -231,6 +261,7 @@ bool InitTestHarnessService0(uint8_t Priority)
   // When doing testing, it is useful to announce just which program
   // is running.
   clrScrn();
+#if SHOW_DEBUG_PRINTS
   puts("\rStarting Test Harness for \r");
   DB_printf( "the 2nd Generation Events & Services Framework V2.4\r\n");
   DB_printf( "compiled at %s on %s\n", __TIME__, __DATE__);
@@ -239,6 +270,7 @@ bool InitTestHarnessService0(uint8_t Priority)
   DB_printf( "Press 'd' to test event deferral \n\r");
   DB_printf( "Press 'r' to test event recall \n\r");
   DB_printf( "Press 'p' to test posting from an interrupt \n\r");
+#endif
 
   /********************************************
    in here you write your initialization code
@@ -310,6 +342,15 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
 {
   ES_Event_t ReturnEvent;
   ReturnEvent.EventType = ES_NO_EVENT; // assume no errors
+
+  // announce every event this service receives (see EventPrint.h),
+  // except the 1 ms servo-update tick: 1000 prints a second would swamp
+  // the serial port and stall the whole program
+  if (!((ES_TIMEOUT == ThisEvent.EventType) &&
+        (SERVO_MOVE_TIMER == ThisEvent.EventParam)))
+  {
+    PrintEvent("TestHarnessService0", MyPriority, ThisEvent);
+  }
   static char DeferredChar = '1';
 
 #ifdef _INCLUDE_BYTE_DEBUG_
@@ -322,8 +363,10 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
       ES_Timer_InitTimer(SERVICE0_TIMER, HALF_SEC);
       ES_Timer_InitTimer(SERVO_MOVE_TIMER, ONE_SEC);   // Jay: start servo updates
       PWMOperate_SetDutyOnChannel(0, 1);   // buzzer silent until a task completes
+#if SHOW_DEBUG_PRINTS
       puts("Service 00:");
       DB_printf("\rES_INIT received in Service %d\r\n", MyPriority);
+#endif
     }
     break;
     // case ES_TIMEOUT:   // re-start timer & announce
@@ -340,8 +383,10 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
       {
         ES_Timer_InitTimer(SERVICE0_TIMER, FIVE_SEC);
         // LATBbits.LATB8 = !LATBbits.LATB8;    // LED test: toggle every timeout
+#if SHOW_DEBUG_PRINTS
         DB_printf("ES_TIMEOUT received from Timer %d in Service %d\r\n",
             ThisEvent.EventParam, MyPriority);
+#endif
       }
       else if (BUZZER_TIMER == ThisEvent.EventParam)   // beep time is up
       {
@@ -352,6 +397,11 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
         moveServo();
         ES_Timer_InitTimer(SERVO_MOVE_TIMER, 1);
       }
+    }
+    break;
+    case ES_GAME_OVER:       // gameTimer ran out: long beep
+    {
+      StartLongBeep();
     }
     break;
     case ES_TASK_COMPLETE:   // any task finished: one 1 s beep
@@ -365,19 +415,25 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
     break;
     case ES_SHORT_TIMEOUT:   // lower the line & announce
     {
+#if SHOW_DEBUG_PRINTS
       puts("\rES_SHORT_TIMEOUT received\r\n");
+#endif
     }
     break;
     case ES_NEW_KEY:   // announce
     {
+#if SHOW_DEBUG_PRINTS
       DB_printf("ES_NEW_KEY received with -> %c <- in Service 0\r\n",
           (char)ThisEvent.EventParam);
+#endif
       if ('d' == ThisEvent.EventParam)
       {
         ThisEvent.EventParam = DeferredChar++;   //
         if (ES_DeferEvent(DeferralQueue, ThisEvent))
         {
+#if SHOW_DEBUG_PRINTS
           puts("ES_NEW_KEY deferred in Service 0\r");
+#endif
         }
       }
       if ('r' == ThisEvent.EventParam)
@@ -387,7 +443,9 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
         // but we slide the deferred events under it so it(they) should come out first
         if (true == ES_RecallEvents(MyPriority, DeferralQueue))
         {
+#if SHOW_DEBUG_PRINTS
           puts("ES_NEW_KEY(s) recalled in Service 0\r");
+#endif
           DeferredChar = '1';
         }
       }

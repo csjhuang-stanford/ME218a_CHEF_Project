@@ -36,7 +36,7 @@
 // #define NUM_SERVICES 2 // Part 3.5) 
 // #define NUM_SERVICES 3 // Part 4.2) 
 // #define NUM_SERVICES 4 // Part 4.3)
-#define NUM_SERVICES 3 // CHEF: Service 0, KeyService, TaskService
+#define NUM_SERVICES 4 // CHEF: Service 0, KeyService, TaskService, GameService
 
 /****************************************************************************/
 // These are the definitions for Service 0, the lowest priority service.
@@ -86,13 +86,13 @@
 // These are the definitions for Service 3
 #if NUM_SERVICES > 3
 // the header file with the public function prototypes
-#define SERV_3_HEADER "TestHarnessService3.h"
+#define SERV_3_HEADER "GameService.h"   // CHEF: game-level state machine
 // the name of the Init function
-#define SERV_3_INIT InitTestHarnessService3
+#define SERV_3_INIT InitGameService
 // the name of the run function
-#define SERV_3_RUN RunTestHarnessService3
+#define SERV_3_RUN RunGameService
 // How big should this services Queue be?
-#define SERV_3_QUEUE_SIZE 3
+#define SERV_3_QUEUE_SIZE 5
 #endif
 
 /****************************************************************************/
@@ -275,7 +275,11 @@ typedef enum
   ES_BEAM_BROKEN,           /* CHEF Task 2: beam went intact -> broken (H->L) */
   ES_SWITCH_CHANGED,        /* CHEF: rocker switch changed, param 1=closed 0=open */
   ES_POT_CHANGED,           /* CHEF Task 1: pot reading moved, param = 0..1023 */
-  ES_TASK_COMPLETE          /* CHEF: a task finished, param = task number; 1 s buzzer beep */
+  ES_GAME_OVER,             /* CHEF: GameService -> Service 0: long buzzer sound */
+  ES_GAME_TIMER_EXPIRED,    /* CHEF: GameService countdown reached 0 */
+  ES_START_TASK,            /* CHEF: GameService -> TaskService, param = (attempt << 8) | task, task 0 = stop */
+  ES_TASK_COMPLETE          /* CHEF: TaskService -> GameService (param = ES_START_TASK param echoed),
+                               GameService -> Service 0 (param = task) */
 }ES_EventType_t;
 
 /****************************************************************************/
@@ -331,8 +335,8 @@ typedef enum
 #define TIMER8_RESP_FUNC TIMER_UNUSED
 #define TIMER9_RESP_FUNC TIMER_UNUSED
 #define TIMER10_RESP_FUNC PostTaskService    // CHEF Task 1 print timer
-#define TIMER11_RESP_FUNC TIMER_UNUSED       // (was TaskService LED blink)
-#define TIMER12_RESP_FUNC TIMER_UNUSED       // (was Task 2 print timer)
+#define TIMER11_RESP_FUNC PostGameService    // CHEF game clock
+#define TIMER12_RESP_FUNC PostGameService    // CHEF per-task time limit
 // used are defined below
 #define TIMER13_RESP_FUNC PostTestHarnessService0  // buzzer beep length
 #define TIMER14_RESP_FUNC PostTestHarnessService0  // Jay: servo update timer
@@ -346,6 +350,8 @@ typedef enum
 // These symbolic names should be changed to be relevant to your application
 
 #define SERVICE0_TIMER 15
+#define GAME_TIMER 11         // CHEF: game clock, ticks every 1 s
+#define TASK_TIMER 12         // CHEF: per-task time limit (taskTimer)
 #define TASK1_PRINT_TIMER 10  // CHEF Task 1: periodic currentPot print
 #define BUZZER_TIMER 13       // 1 s task-complete beep
 #define SERVO_MOVE_TIMER 14   // Jay: pot -> servo update

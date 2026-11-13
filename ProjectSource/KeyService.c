@@ -43,6 +43,10 @@ Module
 #include "ES_Port.h"
 #include "terminal.h"
 #include "dbprintf.h"
+#include "EventPrint.h"
+
+// 1 = show KeyService debug prints, 0 = hide them
+#define SHOW_DEBUG_PRINTS 0
 // #include "LEDServiceFSM.h" // Part 4.2)
 
 /*----------------------------- Module Defines ----------------------------*/
@@ -155,13 +159,18 @@ ES_Event_t RunKeyService(ES_Event_t ThisEvent)
   ES_Event_t ReturnEvent;
   ES_Event_t NewEvent;
   ReturnEvent.EventType = ES_NO_EVENT; // assume no errors
+
+  // announce every event this service receives (see EventPrint.h)
+  PrintEvent("KeyService", MyPriority, ThisEvent);
  
   switch (ThisEvent.EventType)
   {
     case ES_INIT:
     {
+#if SHOW_DEBUG_PRINTS
       DB_printf("\rES_INIT received in KeyService (Service %d)\r\n",
           MyPriority);
+#endif
     }
     break;
  
@@ -191,15 +200,19 @@ ES_Event_t RunKeyService(ES_Event_t ThisEvent)
  
     case ES_KEY_A_PRESSED:   // announce
     {
+#if SHOW_DEBUG_PRINTS
       DB_printf("ES_KEY_A_PRESSED received with -> %c <- in KeyService "
           "(Service %d)\r\n", (char)ThisEvent.EventParam, MyPriority);
+#endif
     }
     break;
  
     case ES_KEY_B_PRESSED:   // announce
     {
+#if SHOW_DEBUG_PRINTS
       DB_printf("ES_KEY_B_PRESSED received with -> %c <- in KeyService "
           "(Service %d)\r\n", (char)ThisEvent.EventParam, MyPriority);
+#endif
     }
     break;
  
@@ -451,4 +464,3 @@ ES_Event_t RunKeyService(ES_Event_t ThisEvent)
 
 /*------------------------------- Footnotes -------------------------------*/
 /*------------------------------ End of file ------------------------------*/
-
