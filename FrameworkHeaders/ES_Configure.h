@@ -36,7 +36,7 @@
 // #define NUM_SERVICES 2 // Part 3.5) 
 // #define NUM_SERVICES 3 // Part 4.2) 
 // #define NUM_SERVICES 4 // Part 4.3)
-#define NUM_SERVICES 4 // CHEF: Service 0, KeyService, TaskService, GameService
+#define NUM_SERVICES 3 // CHEF: Service 0, TaskService, GameService (KeyService removed)
 
 /****************************************************************************/
 // These are the definitions for Service 0, the lowest priority service.
@@ -60,24 +60,24 @@
 // These are the definitions for Service 1
 #if NUM_SERVICES > 1
 // the header file with the public function prototypes
-#define SERV_1_HEADER "KeyService.h" // Part 3.5)
+#define SERV_1_HEADER "TaskService.h"   // CHEF: runs one task at a time
 // the name of the Init function
-#define SERV_1_INIT InitKeyService // Part 3.5)
+#define SERV_1_INIT InitTaskService
 // the name of the run function
-#define SERV_1_RUN RunKeyService // Part 3.5)
+#define SERV_1_RUN RunTaskService
 // How big should this services Queue be?
-#define SERV_1_QUEUE_SIZE 5 // Part 3.5)
+#define SERV_1_QUEUE_SIZE 5
 #endif
 
 /****************************************************************************/
 // These are the definitions for Service 2
 #if NUM_SERVICES > 2
 // the header file with the public function prototypes
-#define SERV_2_HEADER "TaskService.h"   // CHEF (was LEDServiceFSM, Lab 3)
+#define SERV_2_HEADER "GameService.h"   // CHEF: game-level state machine
 // the name of the Init function
-#define SERV_2_INIT InitTaskService
+#define SERV_2_INIT InitGameService
 // the name of the run function
-#define SERV_2_RUN RunTaskService
+#define SERV_2_RUN RunGameService
 // How big should this services Queue be?
 #define SERV_2_QUEUE_SIZE 5
 #endif
@@ -86,13 +86,13 @@
 // These are the definitions for Service 3
 #if NUM_SERVICES > 3
 // the header file with the public function prototypes
-#define SERV_3_HEADER "GameService.h"   // CHEF: game-level state machine
+#define SERV_3_HEADER "TestHarnessService3.h"
 // the name of the Init function
-#define SERV_3_INIT InitGameService
+#define SERV_3_INIT InitTestHarnessService3
 // the name of the run function
-#define SERV_3_RUN RunGameService
+#define SERV_3_RUN RunTestHarnessService3
 // How big should this services Queue be?
-#define SERV_3_QUEUE_SIZE 5
+#define SERV_3_QUEUE_SIZE 3
 #endif
 
 /****************************************************************************/
@@ -268,8 +268,6 @@ typedef enum
   ES_ENTRY,                 /* used as example in HSMTemplate, adding here for successful CMake */
   ES_ENTRY_HISTORY,         /* example in HSMTemplate */
   ES_EXIT,                  /* example in HSMTemplate */
-  ES_KEY_A_PRESSED,         /* Part 3.5): 'a' key received by KeyService */
-  ES_KEY_B_PRESSED,         /* Part 3.5): 'b' key received by KeyService */
   ES_ADD_CHAR_TO_DISPLAY,   /* Part 4.2): EventParam = character to add */
   ES_ROW_UPDATE_COMPLETE,   /* Part 4.2): row sent, HAL ready for next row */
   ES_BEAM_BROKEN,           /* CHEF Task 2: beam went intact -> broken (H->L) */
@@ -277,6 +275,7 @@ typedef enum
   ES_POT_CHANGED,           /* CHEF Task 1: pot reading moved, param = 0..1023 */
   ES_GAME_OVER,             /* CHEF: GameService -> Service 0: long buzzer sound */
   ES_GAME_TIMER_EXPIRED,    /* CHEF: GameService countdown reached 0 */
+  ES_USER_INPUT,            /* CHEF: TaskService -> GameService: pot, beam or switch input */
   ES_START_TASK,            /* CHEF: GameService -> TaskService, param = (attempt << 8) | task, task 0 = stop */
   ES_TASK_COMPLETE          /* CHEF: TaskService -> GameService (param = ES_START_TASK param echoed),
                                GameService -> Service 0 (param = task) */
@@ -340,7 +339,7 @@ typedef enum
 // used are defined below
 #define TIMER13_RESP_FUNC PostTestHarnessService0  // buzzer beep length
 #define TIMER14_RESP_FUNC PostTestHarnessService0  // Jay: servo update timer
-#define TIMER15_RESP_FUNC PostTestHarnessService0
+#define TIMER15_RESP_FUNC PostGameService    // CHEF inactivity limit
 
 /****************************************************************************/
 // Give the timer numbers symbolc names to make it easier to move them
@@ -349,9 +348,9 @@ typedef enum
 // the timer number matches where the timer event will be routed
 // These symbolic names should be changed to be relevant to your application
 
-#define SERVICE0_TIMER 15
 #define GAME_TIMER 11         // CHEF: game clock, ticks every 1 s
 #define TASK_TIMER 12         // CHEF: per-task time limit (taskTimer)
+#define INACTIVE_TIMER 15     // CHEF: no-user-input limit (inactiveTimer)
 #define TASK1_PRINT_TIMER 10  // CHEF Task 1: periodic currentPot print
 #define BUZZER_TIMER 13       // 1 s task-complete beep
 #define SERVO_MOVE_TIMER 14   // Jay: pot -> servo update

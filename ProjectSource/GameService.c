@@ -31,7 +31,14 @@
        next task           : taskIndex++, print score,
                              ES_START_TASK(taskOrder[taskIndex]),
                              restart taskTimer
-     ES_GAME_TIMER_EXPIRED : stop taskTimer,
+     ES_USER_INPUT         : restart inactiveTimer
+                             -> stay in GAME_PLAYING
+     ES_TIMEOUT(INACTIVE_TIMER) ("inactiveTimer expired")
+                           : print "Inactive for # seconds!", stop all
+                             timers, ES_START_TASK(0) (currentTask = 0,
+                             LEDs off), reset score and tasks completed
+                             -> GAME_WELCOME
+     ES_GAME_TIMER_EXPIRED : stop taskTimer and inactiveTimer,
                              ES_START_TASK(0) (currentTask = 0, LEDs off),
                              unfinished task scores nothing,
                              print "Game Completed!" and final score,
@@ -40,6 +47,11 @@
 
    GAME_COMPLETE ("Displaying Game Completion Page")
      ES_NEW_KEY [SPACE]    : -> GAME_WELCOME
+
+   Inactivity timer: INACTIVE_TIMER is a single inactiveTimer-second timer,
+   started with the game and restarted by every ES_USER_INPUT (pot, beam
+   or switch, reported by TaskService). Its timeout is the
+   "inactiveTimer expired" event.
 
    Task timer: TASK_TIMER is a single taskTimer-second timer, restarted at
    the start of every task. Its timeout is the "taskTimer expired" event.
@@ -81,6 +93,9 @@
 #define ONE_SECOND       1000      // ms, GAME_TIMER tick
 #define TASK_IDLE        0         // ES_START_TASK(0) = stop, LEDs off
 #define TASK_MASK        0x00FF    // low byte of ES_START_TASK param = task
+#define TASK_SWITCH      3         // Task 3 (rocker switches) gets extra time
+#define TASK3_TIME_NUM   3         // Task 3 time = 3/2 x taskTimer (1.5x,
+#define TASK3_TIME_DEN   2         //   15 s): stays below inactiveTimer
 
 /*---------------------------- Module Functions ---------------------------*/
 static void PrintWelcome(void);
@@ -88,6 +103,7 @@ static void StartGame(void);
 static void StartTask(uint8_t Task);
 static void NextTask(void);
 static void EndGame(void);
+static void ResetToWelcome(void);
 static void PostToTestHarness(ES_EventType_t Type, uint16_t Param);
 
 /*---------------------------- Module Variables ---------------------------*/
@@ -100,9 +116,15 @@ static GameState_t gameState;
 static uint16_t gameTimer = 60;
 static uint16_t secondsLeft;       // countdown, ticks once per second
 
-// Time allowed per task, in seconds (max 65: one 16-bit ms timer)
+// Time allowed per task, in seconds. Task 3 gets TASK3_TIME_NUM /
+// TASK3_TIME_DEN times this (15 s). Keep every task time below
+// inactiveTimer, and <= 65 s (one 16-bit ms timer).
 static uint16_t taskTimer = 10;
 static uint8_t  attempt;           // counts task starts, tags ES_START_TASK
+
+// No user input (pot, beam, switches) for this many seconds ends the game
+// and returns to the welcome page (max 65 s: one 16-bit ms timer)
+static uint16_t inactiveTimer = 20;
 static uint16_t currentStartParam; // param of the task now running
 
 // Game order: the tasks are played in this order, one after another,
@@ -116,6 +138,7 @@ static uint8_t taskOrder[NUM_GAME_TASKS] = {
 };
 static uint8_t  taskIndex;         // position in taskOrder of current task
 static uint16_t userScore;         // POINTS_PER_TASK per completed task
+static uint16_t tasksCompleted;    // tasks completed in time this game
 
 /*------------------------------ Module Code ------------------------------*/
 /****************************************************************************
@@ -133,6 +156,7 @@ bool InitGameService(uint8_t Priority)
   gameState   = GAME_WELCOME;
   taskIndex   = 0;
   userScore   = 0;
+  tasksCompleted = 0;
   secondsLeft = 0;
   attempt     = 0;
   currentStartParam = 0;
@@ -221,6 +245,7 @@ ES_Event_t RunGameService(ES_Event_t ThisEvent)
         // completed within taskTimer: score it
         ES_Timer_StopTimer(TASK_TIMER);
         userScore += POINTS_PER_TASK;
+        tasksCompleted++;
 
         // beep, plus servo 1 sweep if it was Task 3
         PostToTestHarness(ES_TASK_COMPLETE,
@@ -237,9 +262,24 @@ ES_Event_t RunGameService(ES_Event_t ThisEvent)
                   currentStartParam & TASK_MASK);
         NextTask();
       }
+      else if (ES_USER_INPUT == ThisEvent.EventType)
+      {
+        // someone is playing: restart the inactivity countdown
+        ES_Timer_InitTimer(INACTIVE_TIMER,
+                           (uint16_t)(inactiveTimer * ONE_SECOND));
+      }
+      else if ((ES_TIMEOUT == ThisEvent.EventType) &&
+               (INACTIVE_TIMER == ThisEvent.EventParam))
+      {
+        // event: inactiveTimer expired -> abandon the game
+        DB_printf("\r\nInactive for %d seconds!\r\n", inactiveTimer);
+        ResetToWelcome();
+        gameState = GAME_WELCOME;
+      }
       else if (ES_GAME_TIMER_EXPIRED == ThisEvent.EventType)
       {
         ES_Timer_StopTimer(TASK_TIMER);
+        ES_Timer_StopTimer(INACTIVE_TIMER);
         EndGame();
         gameState = GAME_COMPLETE;
       }
@@ -307,8 +347,10 @@ static void StartGame(void)
 {
   taskIndex   = 0;
   userScore   = 0;                 // every game starts from 0
+  tasksCompleted = 0;
   secondsLeft = gameTimer;
   ES_Timer_InitTimer(GAME_TIMER, ONE_SECOND);
+  ES_Timer_InitTimer(INACTIVE_TIMER, (uint16_t)(inactiveTimer * ONE_SECOND));
 
   DB_printf("\r\nGame started! You have %d seconds.\r\n", gameTimer);
   StartTask(taskOrder[taskIndex]);
@@ -343,8 +385,14 @@ static void NextTask(void)
 ****************************************************************************/
 static void StartTask(uint8_t Task)
 {
+  // Task 3 gets 1.5x as long (integer math: no floating point on this PIC);
+  // every other task gets taskTimer
+  uint16_t thisTaskTime = (TASK_SWITCH == Task) ?
+                          ((taskTimer * TASK3_TIME_NUM) / TASK3_TIME_DEN) :
+                          taskTimer;
+
   DB_printf("Score: %d\r\n", userScore);
-  DB_printf("You have %d seconds for this task\r\n", taskTimer);
+  DB_printf("You have %d seconds for this task\r\n", thisTaskTime);
 
   attempt++;
   currentStartParam = ((uint16_t)attempt << 8) | Task;
@@ -354,7 +402,7 @@ static void StartTask(uint8_t Task)
   StartEvent.EventParam = currentStartParam;
   PostTaskService(StartEvent);
 
-  ES_Timer_InitTimer(TASK_TIMER, (uint16_t)(taskTimer * ONE_SECOND));
+  ES_Timer_InitTimer(TASK_TIMER, (uint16_t)(thisTaskTime * ONE_SECOND));
 }
 
 /****************************************************************************
@@ -378,9 +426,37 @@ static void EndGame(void)
   DB_printf("\r\nTime's up!\r\n");
   DB_printf("Game Completed!\r\n");
   DB_printf("Score: %d\r\n", userScore);
+  DB_printf("Total tasks completed: %d\r\n", tasksCompleted);
   DB_printf("Press SPACE to return to the welcome page\r\n");
 
   PostToTestHarness(ES_GAME_OVER, 0);   // long beep
+}
+
+/****************************************************************************
+ Function
+     ResetToWelcome
+
+ Description
+     Actions for "inactiveTimer expired": stop every game timer, stop the
+     current task (currentTask = 0, LEDs off), reset the score and the
+     tasks-completed count, show the welcome page again.
+****************************************************************************/
+static void ResetToWelcome(void)
+{
+  ES_Timer_StopTimer(GAME_TIMER);
+  ES_Timer_StopTimer(TASK_TIMER);
+  ES_Timer_StopTimer(INACTIVE_TIMER);
+
+  ES_Event_t StopEvent;
+  StopEvent.EventType  = ES_START_TASK;
+  StopEvent.EventParam = TASK_IDLE;
+  PostTaskService(StopEvent);
+
+  userScore      = 0;
+  tasksCompleted = 0;
+  taskIndex      = 0;
+
+  PrintWelcome();                  // entry action of GAME_WELCOME
 }
 
 /****************************************************************************

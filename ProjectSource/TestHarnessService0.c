@@ -53,7 +53,7 @@
 #define TWO_SEC (ONE_SEC * 2)
 #define FIVE_SEC (ONE_SEC * 5)
 #define BEEP_FREQ     2000     // Hz, "task complete" beep
-#define BEEP_DURATION 500     // ms (1 second)
+#define BEEP_DURATION 1000     // ms (1 second)
 // 1 = show the framework test-harness prints (banner, key echo, timer
 // announcements), 0 = hide them so only the game prints show
 #define SHOW_DEBUG_PRINTS 0
@@ -344,10 +344,9 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
   ReturnEvent.EventType = ES_NO_EVENT; // assume no errors
 
   // announce every event this service receives (see EventPrint.h),
-  // except the 1 ms servo-update tick: 1000 prints a second would swamp
-  // the serial port and stall the whole program
-  if (!((ES_TIMEOUT == ThisEvent.EventType) &&
-        (SERVO_MOVE_TIMER == ThisEvent.EventParam)))
+  // except its own timer timeouts: the 1 ms servo-update tick (1000 prints
+  // a second would swamp the serial port) and the buzzer-off timer
+  if (ES_TIMEOUT != ThisEvent.EventType)
   {
     PrintEvent("TestHarnessService0", MyPriority, ThisEvent);
   }
@@ -360,7 +359,6 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
   {
     case ES_INIT:
     {
-      ES_Timer_InitTimer(SERVICE0_TIMER, HALF_SEC);
       ES_Timer_InitTimer(SERVO_MOVE_TIMER, ONE_SEC);   // Jay: start servo updates
       PWMOperate_SetDutyOnChannel(0, 1);   // buzzer silent until a task completes
 #if SHOW_DEBUG_PRINTS
@@ -371,7 +369,7 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
     break;
     // case ES_TIMEOUT:   // re-start timer & announce
     // {
-    //   ES_Timer_InitTimer(SERVICE0_TIMER, FIVE_SEC);
+    //   ES_Timer_InitTimer(SERVICE0_TIMER, FIVE_SEC);   // (timer removed)
     //   DB_printf("ES_TIMEOUT received from Timer %d in Service %d\r\n",
     //       ThisEvent.EventParam, MyPriority);
     // }
@@ -379,16 +377,7 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
     // CHEF_Project_LED_1
     case ES_TIMEOUT:   // route by which timer expired
     {
-      if (SERVICE0_TIMER == ThisEvent.EventParam)   // re-start timer & announce
-      {
-        ES_Timer_InitTimer(SERVICE0_TIMER, FIVE_SEC);
-        // LATBbits.LATB8 = !LATBbits.LATB8;    // LED test: toggle every timeout
-#if SHOW_DEBUG_PRINTS
-        DB_printf("ES_TIMEOUT received from Timer %d in Service %d\r\n",
-            ThisEvent.EventParam, MyPriority);
-#endif
-      }
-      else if (BUZZER_TIMER == ThisEvent.EventParam)   // beep time is up
+      if (BUZZER_TIMER == ThisEvent.EventParam)   // beep time is up
       {
         StopBeep();
       }

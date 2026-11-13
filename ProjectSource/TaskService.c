@@ -49,6 +49,10 @@
    Task complete: print "Task # Completed!", stop the task, post
    ES_TASK_COMPLETE to GameService, then wait for the next ES_START_TASK.
 
+   User input: every ES_POT_CHANGED, ES_BEAM_BROKEN or ES_SWITCH_CHANGED
+   (in any task) is also reported to GameService as ES_USER_INPUT, so
+   GameService can restart its inactiveTimer.
+
  Notes
    ES_BEAM_BROKEN is posted here by Check4BeamBreak() in BeamBreak.c.
    ES_POT_CHANGED is posted here by Check4PotChange() in Potentiometer.c.
@@ -281,6 +285,18 @@ ES_Event_t RunTaskService(ES_Event_t ThisEvent)
 
   // announce every event this service receives (see EventPrint.h)
   PrintEvent("TaskService", MyPriority, ThisEvent);
+
+  // any pot / beam / switch input counts as user activity, whatever the
+  // current task: tell GameService so it restarts its inactiveTimer
+  if ((ES_POT_CHANGED    == ThisEvent.EventType) ||
+      (ES_BEAM_BROKEN    == ThisEvent.EventType) ||
+      (ES_SWITCH_CHANGED == ThisEvent.EventType))
+  {
+    ES_Event_t InputEvent;
+    InputEvent.EventType  = ES_USER_INPUT;
+    InputEvent.EventParam = ThisEvent.EventType;   // which kind of input
+    PostGameService(InputEvent);
+  }
 
   switch (ThisEvent.EventType)
   {

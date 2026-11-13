@@ -8,8 +8,8 @@
  Description
    Shared helper: each service calls PrintEvent() at the top of its Run
    function, so the terminal shows every event and who received it:
-       ES_INIT received in KeyService (Service 1)
-       ES_START_TASK received in TaskService (Service 2)
+       ES_INIT received in TaskService (Service 1)
+       ES_START_TASK received in TaskService (Service 1)
    Turn all of these prints off with SHOW_EVENT_PRINTS in EventPrint.h.
 
  Notes
@@ -50,8 +50,6 @@ const char *EventName(ES_EventType_t EventType)
     case ES_ENTRY:                  return "ES_ENTRY";
     case ES_ENTRY_HISTORY:          return "ES_ENTRY_HISTORY";
     case ES_EXIT:                   return "ES_EXIT";
-    case ES_KEY_A_PRESSED:          return "ES_KEY_A_PRESSED";
-    case ES_KEY_B_PRESSED:          return "ES_KEY_B_PRESSED";
     case ES_ADD_CHAR_TO_DISPLAY:    return "ES_ADD_CHAR_TO_DISPLAY";
     case ES_ROW_UPDATE_COMPLETE:    return "ES_ROW_UPDATE_COMPLETE";
     case ES_BEAM_BROKEN:            return "ES_BEAM_BROKEN";
@@ -61,6 +59,7 @@ const char *EventName(ES_EventType_t EventType)
     case ES_GAME_TIMER_EXPIRED:     return "ES_GAME_TIMER_EXPIRED";
     case ES_START_TASK:             return "ES_START_TASK";
     case ES_TASK_COMPLETE:          return "ES_TASK_COMPLETE";
+    case ES_USER_INPUT:             return "ES_USER_INPUT";
     default:                        return "ES_UNKNOWN_EVENT";
   }
 }

@@ -3,7 +3,7 @@
   Header file for EventPrint (CHEF project)
   One shared helper so every service announces the events it receives in
   the same format, e.g.
-      ES_INIT received in KeyService (Service 1)
+      ES_INIT received in TaskService (Service 1)
 
  ****************************************************************************/
 

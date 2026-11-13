@@ -9,12 +9,12 @@
    Hardware + event checker for the potentiometer (CHEF Task 1).
      Pot ends -> 3.3V and GNDREF, wiper -> RB13 / AN11 (pin 24)
      Reading: 0 (wiper at GND end) .. 1023 (wiper at 3.3V end)
-   Check4PotChange() reads the ADC every SAMPLE_TIME ms and posts
-   ES_POT_CHANGED to TaskService whenever the reading has moved by at
-   least CHANGE_THRESHOLD counts since the last posted value.
-   EventParam = the new reading (0..1023).
-   The threshold keeps normal ADC noise (a few counts) from flooding
-   TaskService's queue with events while the pot is sitting still.
+   Check4PotChange() reads the ADC every SAMPLE_TIME ms, averages the last
+   NUM_AVG readings, and posts ES_POT_CHANGED to TaskService only when
+   that average has moved by at least CHANGE_THRESHOLD (+/-5) counts since
+   the last posted value. EventParam = the new (averaged) reading 0..1023.
+   Averaging + threshold keep normal ADC noise (about +/-2 counts) from
+   producing events while nobody is touching the pot.
 
  Notes
    RB13 is AN11, so ANSELB bit 13 stays set (analog).
@@ -23,6 +23,7 @@
  History
  When           Who     What/Why
  -------------- ---     --------
+ 11/12/26       CH      average NUM_AVG readings before the +/-5 check
  11/12/26       CH      started coding (moved ADC setup out of main.c and
                         the reading out of TestHarnessService0.c)
 ****************************************************************************/
@@ -39,15 +40,20 @@
 /*----------------------------- Module Defines ----------------------------*/
 #define POT_AN_CHANNEL    11      // AN11 = RB13
 #define SAMPLE_TIME       20      // ms between ADC reads
-#define CHANGE_THRESHOLD  5       // counts the reading must move to post
+#define CHANGE_THRESHOLD  5       // average must move >= 5 counts to post
+#define NUM_AVG           8       // readings averaged (8 x 20 ms = 160 ms)
 
 /*---------------------------- Module Variables ---------------------------*/
 static uint16_t CurrentPot;       // latest reading
 static uint16_t LastPostedPot;    // reading in the last ES_POT_CHANGED
 static uint16_t LastSampleTime;
+static uint16_t Samples[NUM_AVG]; // last NUM_AVG raw readings
+static uint8_t  SampleIndex;      // where the next reading goes
+static uint16_t SampleSum;        // running sum of Samples[]
 
 /*---------------------------- Module Functions ---------------------------*/
 static uint16_t ReadPot(void);
+static uint16_t AddSample(uint16_t Raw);
 
 /*------------------------------ Module Code ------------------------------*/
 /****************************************************************************
@@ -64,7 +70,17 @@ void InitPotentiometer(void)
   TRISBbits.TRISB13 = 1;     // input
   ADC_ConfigAutoScan(1u << POT_AN_CHANNEL);
 
-  CurrentPot     = ReadPot();
+  // fill the averaging buffer with the starting reading
+  uint16_t first = ReadPot();
+  uint8_t  i;
+  for (i = 0; i < NUM_AVG; i++)
+  {
+    Samples[i] = first;
+  }
+  SampleSum      = first * NUM_AVG;
+  SampleIndex    = 0;
+
+  CurrentPot     = first;
   LastPostedPot  = CurrentPot;
   LastSampleTime = ES_Timer_GetTime();
 }
@@ -88,7 +104,7 @@ bool Check4PotChange(void)
   if ((uint16_t)(Now - LastSampleTime) >= SAMPLE_TIME)
   {
     LastSampleTime = Now;
-    CurrentPot     = ReadPot();
+    CurrentPot     = AddSample(ReadPot());   // averaged reading
 
     uint16_t diff = (CurrentPot > LastPostedPot) ?
                     (CurrentPot - LastPostedPot) : (LastPostedPot - CurrentPot);
@@ -112,7 +128,7 @@ bool Check4PotChange(void)
      QueryCurrentPot
 
  Returns
-     uint16_t: latest reading, 0..1023 (updated every SAMPLE_TIME ms)
+     uint16_t: latest averaged reading, 0..1023 (updated every SAMPLE_TIME ms)
 ****************************************************************************/
 uint16_t QueryCurrentPot(void)
 {
@@ -127,6 +143,21 @@ static uint16_t ReadPot(void)
   uint32_t adcResults[1];
   ADC_MultiRead(adcResults);
   return (uint16_t)adcResults[0];
+}
+
+// moving average: replace the oldest reading with Raw, return the average
+static uint16_t AddSample(uint16_t Raw)
+{
+  SampleSum -= Samples[SampleIndex];
+  Samples[SampleIndex] = Raw;
+  SampleSum += Raw;
+
+  SampleIndex++;
+  if (SampleIndex >= NUM_AVG)
+  {
+    SampleIndex = 0;
+  }
+  return (uint16_t)((SampleSum + (NUM_AVG / 2)) / NUM_AVG);   // rounded
 }
 
 /*------------------------------ End of file ------------------------------*/
