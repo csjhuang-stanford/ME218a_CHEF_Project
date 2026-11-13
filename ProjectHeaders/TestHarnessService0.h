@@ -20,4 +20,3 @@ bool PostTestHarnessService0(ES_Event_t ThisEvent);
 ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent);
 
 #endif /* ServTemplate_H */
-

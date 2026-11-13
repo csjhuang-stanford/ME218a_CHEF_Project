@@ -7,7 +7,9 @@
 
  Description
    Hardware + event checker for the IR break-beam sensor (CHEF Task 2).
-     Receiver OUT -> series resistor -> RB5 (pin 14, 5V tolerant)
+     Receiver white wire (open collector) -> RB5 (pin 14)
+     Receiver red -> 5V, black -> GNDREF
+     RB5 internal pull-up to 3.3V supplies the high level:
      Beam intact  -> OUT high (1)
      Beam broken  -> OUT low  (0)
    Check4BeamBreak() samples RB5 every SAMPLE_TIME ms (not every pass of
@@ -22,6 +24,7 @@
  History
  When           Who     What/Why
  -------------- ---     --------
+ 11/12/26       CH      internal pull-up on: receiver is open collector
  11/10/26       CH      started coding
 ****************************************************************************/
 /*----------------------------- Include Files -----------------------------*/
@@ -49,14 +52,15 @@ static uint16_t LastSampleTime;
      InitBeamBreak
 
  Description
-     RB5 as a digital input with no internal pull-up/pull-down (the
-     receiver module has its own). Records the starting state so the
-     first sample doesn't produce a false edge.
+     RB5 as a digital input with the internal pull-up on. The receiver
+     output is open collector (it can only pull low), so without a
+     pull-up the pin floats. Records the starting state so the first
+     sample doesn't produce a false edge.
 ****************************************************************************/
 void InitBeamBreak(void)
 {
   TRISBbits.TRISB5 = 1;      // input
-  CNPUBbits.CNPUB5 = 0;      // internal pull-up off
+  CNPUBbits.CNPUB5 = 1;      // internal pull-up on (open-collector receiver)
   CNPDBbits.CNPDB5 = 0;      // internal pull-down off
 
   LastBeamState  = BEAM_PIN;

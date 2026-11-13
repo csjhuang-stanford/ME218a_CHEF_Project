@@ -20,5 +20,6 @@ bool InitTaskService(uint8_t Priority);
 bool PostTaskService(ES_Event_t ThisEvent);
 ES_Event_t RunTaskService(ES_Event_t ThisEvent);
 uint8_t QueryCurrentTask(void);
+bool QueryTask2Running(void);   // true while Task 2 is waiting for swipes
 
 #endif /* TaskService_H */

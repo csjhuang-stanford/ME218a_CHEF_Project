@@ -42,6 +42,8 @@
 #include "ES_Port.h"
 #include "terminal.h"
 #include "dbprintf.h"
+#include "PWM_PIC32.h"     // Jay: buzzer + servo PWM
+#include "TaskService.h"   // QueryTask2Running(), QueryCurrentTask(): servo modes
 
 /*----------------------------- Module Defines ----------------------------*/
 // these times assume a 10.000mS/tick timing
@@ -49,11 +51,32 @@
 #define HALF_SEC (ONE_SEC / 2)
 #define TWO_SEC (ONE_SEC * 2)
 #define FIVE_SEC (ONE_SEC * 5)
+#define BEEP_FREQ     2000     // Hz, "task complete" beep
+#define BEEP_DURATION 1000     // ms (1 second)
+
+// Servo pulse widths in PWM ticks (2.5 MHz: 2500 = 1 ms)
+// For continuous-rotation servos: 1.5 ms = stop, 2 ms = full speed one way,
+// 1 ms = full speed the other way
+#define SERVO_STOP_PULSE   3750   // 1.5 ms
+#define SERVO2_SPIN_PULSE  5000   // 2.0 ms (use 2500 to spin the other way)
+
+// PWM channels (see main.c)
+#define SERVO1_CHANNEL     4      // OC4 on RA4, positional
+#define SERVO2_CHANNEL     3      // OC3 on RA3, continuous rotation
+
+// Servo 1 (RA4, positional) rests at one end. When Task 3 completes it
+// sweeps once from min to max, holds briefly, then returns to rest.
+#define SERVO1_TASK        3      // completing this task triggers the sweep
+#define SERVO_MIN_PULSE    2500   // 1.0 ms = one end (rest)
+#define SERVO_MAX_PULSE    5000   // 2.0 ms = other end
+#define SERVO_SWEEP_STEP   3      // ticks per 1 ms update: ~0.8 s end to end
+#define SERVO1_HOLD_TIME   500    // ms to hold at max before returning
 
 #define ENTER_POST     ((MyPriority<<3)|0)
 #define ENTER_RUN      ((MyPriority<<3)|1)
 #define ENTER_TIMEOUT  ((MyPriority<<3)|2)
 
+// Do NOT enable TEST_INT_POST: it uses TMR2, which now drives the buzzer PWM
 //#define TEST_INT_POST
 //#define BLINK LED
 /*---------------------------- Module Functions ---------------------------*/
@@ -74,6 +97,108 @@ static void StartTMR2(void);
 static uint8_t MyPriority;
 // add a deferral queue for up to 3 pending deferrals +1 to allow for overhead
 static ES_Event_t DeferralQueue[3 + 1];
+
+
+// Servo 1 one-shot sweep (triggered by Task 3 completion)
+typedef enum
+{
+  SERVO1_RESTING = 0,              // parked at SERVO_MIN_PULSE
+  SERVO1_SWEEPING,                 // moving min -> max
+  SERVO1_HOLDING                   // at max, waiting before return
+} Servo1State_t;
+
+static Servo1State_t Servo1State = SERVO1_RESTING;
+static uint16_t      Servo1Pulse = SERVO_MIN_PULSE;
+static uint16_t      Servo1HoldCount;
+
+// start one min -> max sweep (restarts it if already moving)
+static void StartServo1Sweep(void)
+{
+  Servo1Pulse = SERVO_MIN_PULSE;
+  Servo1State = SERVO1_SWEEPING;
+}
+
+/*----------------------------- Buzzer beep -------------------------------*/
+// Buzzer = PWM channel 1 on Timer2, output on RPB15 (see main.c)
+// One BEEP_DURATION beep when any task completes; no music.
+
+/* Jay's melody, not used: the buzzer only beeps on task completion now.
+typedef struct
+{
+  uint16_t Frequency;
+  uint16_t Duration;
+} MelodyNote_t;
+
+static const MelodyNote_t Melody[] = {
+  {493, 500}, {440, 500}, {392, 500}, {440, 500}, {493, 500},
+  {493, 500}, {493, 1000}, {440, 500}, {440, 500}, {440, 1000},
+  {493, 500}, {587, 500}, {587, 1000}, {493, 500}, {440, 500},
+  {392, 500}, {440, 500}, {493, 500}, {493, 500}, {493, 1000},
+  {440, 500}, {440, 500}, {493, 500}, {440, 500}, {392, 2000}
+};
+*/
+
+// Buzzer on at BEEP_FREQ; BUZZER_TIMER turns it off after BEEP_DURATION.
+// A second completion during a beep just restarts the 1 s.
+static void StartBeep(void)
+{
+  PWMSetup_SetFreqOnTimer(BEEP_FREQ, _Timer2_);
+  PWMOperate_SetDutyOnChannel(50, 1);
+  ES_Timer_InitTimer(BUZZER_TIMER, BEEP_DURATION);
+}
+
+static void StopBeep(void)
+{
+  PWMOperate_SetDutyOnChannel(0, 1);
+}
+
+/*------------------------- Jay: pot -> servo -----------------------------*/
+// Servo 1 = PWM channel 4 on RA4, servo 2 = channel 3 on RA3 (Timer3, 50 Hz)
+static void moveServo(void)
+{
+  // Servo 1 (channel 4, RA4): only moves after Task 3 completes
+  switch (Servo1State)
+  {
+    case SERVO1_SWEEPING:
+    {
+      Servo1Pulse += SERVO_SWEEP_STEP;
+      if (Servo1Pulse >= SERVO_MAX_PULSE)
+      {
+        Servo1Pulse     = SERVO_MAX_PULSE;
+        Servo1HoldCount = 0;
+        Servo1State     = SERVO1_HOLDING;
+      }
+    }
+    break;
+
+    case SERVO1_HOLDING:   // let the servo physically reach the end
+    {
+      if (++Servo1HoldCount >= SERVO1_HOLD_TIME)
+      {
+        Servo1Pulse = SERVO_MIN_PULSE;    // back to rest
+        Servo1State = SERVO1_RESTING;
+      }
+    }
+    break;
+
+    default:               // SERVO1_RESTING
+    {
+      Servo1Pulse = SERVO_MIN_PULSE;
+    }
+    break;
+  }
+  PWMOperate_SetPulseWidthOnChannel(Servo1Pulse, SERVO1_CHANNEL);
+
+  // Servo 2 (channel 3, RA3, continuous): spins while Task 2 is running
+  if (QueryTask2Running())
+  {
+    PWMOperate_SetPulseWidthOnChannel(SERVO2_SPIN_PULSE, SERVO2_CHANNEL);
+  }
+  else
+  {
+    PWMOperate_SetPulseWidthOnChannel(SERVO_STOP_PULSE, SERVO2_CHANNEL);
+  }
+}
 
 /*------------------------------ Module Code ------------------------------*/
 /****************************************************************************
@@ -195,6 +320,8 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
     case ES_INIT:
     {
       ES_Timer_InitTimer(SERVICE0_TIMER, HALF_SEC);
+      ES_Timer_InitTimer(SERVO_MOVE_TIMER, ONE_SEC);   // Jay: start servo updates
+      PWMOperate_SetDutyOnChannel(0, 1);   // buzzer silent until a task completes
       puts("Service 00:");
       DB_printf("\rES_INIT received in Service %d\r\n", MyPriority);
     }
@@ -207,12 +334,33 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
     // }
     // break;
     // CHEF_Project_LED_1
-    case ES_TIMEOUT:   // re-start timer & announce
+    case ES_TIMEOUT:   // route by which timer expired
     {
-      ES_Timer_InitTimer(SERVICE0_TIMER, FIVE_SEC);
-      // LATBbits.LATB8 = !LATBbits.LATB8;    // LED test: toggle every timeout
-      DB_printf("ES_TIMEOUT received from Timer %d in Service %d\r\n",
-          ThisEvent.EventParam, MyPriority);
+      if (SERVICE0_TIMER == ThisEvent.EventParam)   // re-start timer & announce
+      {
+        ES_Timer_InitTimer(SERVICE0_TIMER, FIVE_SEC);
+        // LATBbits.LATB8 = !LATBbits.LATB8;    // LED test: toggle every timeout
+        DB_printf("ES_TIMEOUT received from Timer %d in Service %d\r\n",
+            ThisEvent.EventParam, MyPriority);
+      }
+      else if (BUZZER_TIMER == ThisEvent.EventParam)   // beep time is up
+      {
+        StopBeep();
+      }
+      else if (SERVO_MOVE_TIMER == ThisEvent.EventParam)    // Jay: follow pot
+      {
+        moveServo();
+        ES_Timer_InitTimer(SERVO_MOVE_TIMER, 1);
+      }
+    }
+    break;
+    case ES_TASK_COMPLETE:   // any task finished: one 1 s beep
+    {
+      StartBeep();
+      if (SERVO1_TASK == ThisEvent.EventParam)
+      {
+        StartServo1Sweep();  // Task 3 done: servo 1 sweeps min -> max once
+      }
     }
     break;
     case ES_SHORT_TIMEOUT:   // lower the line & announce
@@ -327,4 +475,3 @@ void __ISR(_TIMER_2_VECTOR, IPL2AUTO) Timer2ISR(void)
 #endif
 /*------------------------------- Footnotes -------------------------------*/
 /*------------------------------ End of file ------------------------------*/
-

@@ -9,7 +9,7 @@
    Hardware + event checker for four 2-position rocker switches.
      Switch 1: RB3  (pin 7)  -> switch -> GND
      Switch 2: RB4  (pin 11) -> switch -> GND
-     Switch 3: RB11 (pin 22) -> switch -> GND
+     Switch 3: RB2  (pin 6)  -> switch -> GND
      Switch 4: RB12 (pin 23) -> switch -> GND
    Internal pull-ups are enabled on all four pins, so for each switch:
      closed -> pin pulled to GND -> reads 0 -> report 1
@@ -21,15 +21,16 @@
    changes. EventParam = the combined value (0..15).
 
  Notes
-   RB3 is also AN5 and RB12 is AN12 (analog at reset), so ANSELB bits
-   3 and 12 must be cleared.
+   RB2 is AN4, RB3 is AN5 and RB12 is AN12 (analog at reset), so ANSELB
+   bits 2, 3 and 12 must be cleared.
    RB4 has no analog function, but it is SOSCI: the config bit
    FSOSCEN must be OFF or the secondary oscillator takes the pin.
-   RB11 is also PGEC2/TMS: fine with ICESEL = ICS_PGx1 and JTAGEN = OFF.
+   Switch 3 moved from RB11 to RB2: RB11 is now servo 1's PWM output.
 
  History
  When           Who     What/Why
  -------------- ---     --------
+ 11/12/26       CH      switch 3 moved RB11 -> RB2 (RB11 = servo 1 PWM)
  11/10/26       CH      added switches 3, 4 on RB11, RB12, 4-digit value
  11/10/26       CH      added switch 2 on RB4, combined 2-digit value
  11/10/26       CH      started coding
@@ -46,7 +47,7 @@
 /*----------------------------- Module Defines ----------------------------*/
 #define SWITCH1_PIN    PORTBbits.RB3
 #define SWITCH2_PIN    PORTBbits.RB4
-#define SWITCH3_PIN    PORTBbits.RB11
+#define SWITCH3_PIN    PORTBbits.RB2
 #define SWITCH4_PIN    PORTBbits.RB12
 #define PIN_LOW        0
 #define SAMPLE_TIME    20        // ms between samples (debounce)
@@ -64,7 +65,7 @@ static uint8_t ReadSwitches(void);
      InitRockerSwitch
 
  Description
-     RB3, RB4, RB11 and RB12 as digital inputs with internal pull-ups on.
+     RB3, RB4, RB2 and RB12 as digital inputs with internal pull-ups on.
      Records the
      starting state so the first sample doesn't produce a false change.
 ****************************************************************************/
@@ -81,10 +82,11 @@ void InitRockerSwitch(void)
   CNPDBbits.CNPDB4 = 0;      // internal pull-down off
   CNPUBbits.CNPUB4 = 1;      // internal pull-up on (switch goes to GND)
 
-  // Switch 3: RB11 (no analog function, so no ANSELB bit)
-  TRISBbits.TRISB11 = 1;     // input
-  CNPDBbits.CNPDB11 = 0;     // internal pull-down off
-  CNPUBbits.CNPUB11 = 1;     // internal pull-up on (switch goes to GND)
+  // Switch 3: RB2
+  ANSELBbits.ANSB2 = 0;      // digital (RB2 is AN4 by default)
+  TRISBbits.TRISB2 = 1;      // input
+  CNPDBbits.CNPDB2 = 0;      // internal pull-down off
+  CNPUBbits.CNPUB2 = 1;      // internal pull-up on (switch goes to GND)
 
   // Switch 4: RB12
   ANSELBbits.ANSB12 = 0;     // digital (RB12 is AN12 by default)
