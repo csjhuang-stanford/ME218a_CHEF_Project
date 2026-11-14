@@ -44,7 +44,6 @@
 #include "dbprintf.h"
 #include "EventPrint.h"
 #include "PWM_PIC32.h"     // Jay: buzzer + servo PWM
-#include "TaskService.h"   // QueryTask2Running(), QueryCurrentTask(): servo modes
 
 /*----------------------------- Module Defines ----------------------------*/
 // these times assume a 10.000mS/tick timing
@@ -53,7 +52,7 @@
 #define TWO_SEC (ONE_SEC * 2)
 #define FIVE_SEC (ONE_SEC * 5)
 #define BEEP_FREQ     2000     // Hz, "task complete" beep
-#define BEEP_DURATION 500     // ms (1 second)
+#define BEEP_DURATION 1000     // ms (1 second)
 // 1 = show the framework test-harness prints (banner, key echo, timer
 // announcements), 0 = hide them so only the game prints show
 #define SHOW_DEBUG_PRINTS 0
@@ -61,14 +60,10 @@
 #define BUZZER_ON     true     // true = real beep, false = print "BEEP!" only
 
 // Servo pulse widths in PWM ticks (2.5 MHz: 2500 = 1 ms)
-// For continuous-rotation servos: 1.5 ms = stop, 2 ms = full speed one way,
-// 1 ms = full speed the other way
-#define SERVO_STOP_PULSE   3750   // 1.5 ms
-#define SERVO2_SPIN_PULSE  5000   // 2.0 ms (use 2500 to spin the other way)
 
 // PWM channels (see main.c)
 #define SERVO1_CHANNEL     4      // OC4 on RA4, positional
-#define SERVO2_CHANNEL     3      // OC3 on RA3, continuous rotation
+#define SERVO2_CHANNEL     3      // OC3 on RA3, positional ("burger" servo)
 
 // Servo 1 (RA4, positional) rests at one end. When Task 3 completes it
 // sweeps once from min to max, holds briefly, then returns to rest.
@@ -77,6 +72,10 @@
 #define SERVO_MAX_PULSE    5000   // 2.0 ms = other end
 #define SERVO_SWEEP_STEP   3      // ticks per 1 ms update: ~0.8 s end to end
 #define SERVO1_HOLD_TIME   500    // ms to hold at max before returning
+
+// Servo 2 (RA3, positional) rests at min. When the whole game is completed
+// it sweeps min -> max, holds SERVO2_HOLD_TIME, sweeps max -> min.
+#define SERVO2_HOLD_TIME   3000   // ms to hold at max ("dispensing")
 
 #define ENTER_POST     ((MyPriority<<3)|0)
 #define ENTER_RUN      ((MyPriority<<3)|1)
@@ -122,6 +121,27 @@ static void StartServo1Sweep(void)
 {
   Servo1Pulse = SERVO_MIN_PULSE;
   Servo1State = SERVO1_SWEEPING;
+}
+
+// Servo 2 burger dispense (triggered by game completion)
+typedef enum
+{
+  SERVO2_RESTING = 0,              // parked at SERVO_MIN_PULSE
+  SERVO2_SWEEPING_UP,              // moving min -> max
+  SERVO2_HOLDING,                  // at max for SERVO2_HOLD_TIME
+  SERVO2_SWEEPING_DOWN             // moving max -> min
+} Servo2State_t;
+
+static Servo2State_t Servo2State = SERVO2_RESTING;
+static uint16_t      Servo2Pulse = SERVO_MIN_PULSE;
+static uint16_t      Servo2HoldCount;
+
+// start the dispense: min -> max, hold, max -> min
+static void StartServo2Dispense(void)
+{
+  DB_printf("Dispensing Burger!\r\n");
+  Servo2Pulse = SERVO_MIN_PULSE;
+  Servo2State = SERVO2_SWEEPING_UP;
 }
 
 /*----------------------------- Buzzer beep -------------------------------*/
@@ -219,15 +239,52 @@ static void moveServo(void)
   }
   PWMOperate_SetPulseWidthOnChannel(Servo1Pulse, SERVO1_CHANNEL);
 
-  // Servo 2 (channel 3, RA3, continuous): spins while Task 2 is running
-  if (QueryTask2Running())
+  // Servo 2 (channel 3, RA3): only moves when the game is completed
+  switch (Servo2State)
   {
-    PWMOperate_SetPulseWidthOnChannel(SERVO2_SPIN_PULSE, SERVO2_CHANNEL);
+    case SERVO2_SWEEPING_UP:
+    {
+      Servo2Pulse += SERVO_SWEEP_STEP;
+      if (Servo2Pulse >= SERVO_MAX_PULSE)
+      {
+        Servo2Pulse     = SERVO_MAX_PULSE;
+        Servo2HoldCount = 0;
+        Servo2State     = SERVO2_HOLDING;
+      }
+    }
+    break;
+
+    case SERVO2_HOLDING:
+    {
+      if (++Servo2HoldCount >= SERVO2_HOLD_TIME)
+      {
+        Servo2State = SERVO2_SWEEPING_DOWN;
+      }
+    }
+    break;
+
+    case SERVO2_SWEEPING_DOWN:
+    {
+      if (Servo2Pulse <= (SERVO_MIN_PULSE + SERVO_SWEEP_STEP))
+      {
+        Servo2Pulse = SERVO_MIN_PULSE;
+        Servo2State = SERVO2_RESTING;
+        DB_printf("Burger Dispensed!\r\n");
+      }
+      else
+      {
+        Servo2Pulse -= SERVO_SWEEP_STEP;
+      }
+    }
+    break;
+
+    default:               // SERVO2_RESTING
+    {
+      Servo2Pulse = SERVO_MIN_PULSE;
+    }
+    break;
   }
-  else
-  {
-    PWMOperate_SetPulseWidthOnChannel(SERVO_STOP_PULSE, SERVO2_CHANNEL);
-  }
+  PWMOperate_SetPulseWidthOnChannel(Servo2Pulse, SERVO2_CHANNEL);
 }
 
 /*------------------------------ Module Code ------------------------------*/
@@ -388,9 +445,10 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
       }
     }
     break;
-    case ES_GAME_OVER:       // gameTimer ran out: long beep
+    case ES_GAME_OVER:       // whole game completed: long beep + burger
     {
       StartLongBeep();
+      StartServo2Dispense();
     }
     break;
     case ES_TASK_COMPLETE:   // any task finished: one 1 s beep

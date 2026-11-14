@@ -275,6 +275,7 @@ typedef enum
   ES_POT_CHANGED,           /* CHEF Task 1: pot reading moved, param = 0..1023 */
   ES_GAME_OVER,             /* CHEF: GameService -> Service 0: long buzzer sound */
   ES_GAME_TIMER_EXPIRED,    /* CHEF: GameService countdown reached 0 */
+  ES_START_PRESSED,         /* CHEF: start button pressed (StartButton.c -> GameService) */
   ES_USER_INPUT,            /* CHEF: TaskService -> GameService: pot, beam or switch input */
   ES_START_TASK,            /* CHEF: GameService -> TaskService, param = (attempt << 8) | task, task 0 = stop */
   ES_TASK_COMPLETE          /* CHEF: TaskService -> GameService (param = ES_START_TASK param echoed),
@@ -314,7 +315,7 @@ typedef enum
 /****************************************************************************/
 // This is the list of event checking functions
 #define EVENT_CHECK_LIST Check4Keystroke, Check4BeamBreak, Check4RockerSwitch, \
-                         Check4PotChange
+                         Check4PotChange, Check4StartButton
 
 /****************************************************************************/
 // These are the definitions for the post functions to be executed when the

@@ -402,11 +402,12 @@ uint8_t QueryCurrentTask(void)
      bool true while Task 2 is waiting for swipes
      (TestHarnessService0 spins servo 2 during this time)
 ****************************************************************************/
+/* No longer used: servo 2 now runs only at game completion (ES_GAME_OVER)
 bool QueryTask2Running(void)
 {
   return (TASK2_WAITING == Task2State);
 }
-
+*/
 /***************************************************************************
  private functions
  ***************************************************************************/

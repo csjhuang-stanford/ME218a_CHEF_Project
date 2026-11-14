@@ -19,7 +19,7 @@
 // Game states
 typedef enum
 {
-  GAME_WELCOME = 0,                 // welcome page, waiting for SPACE
+  GAME_WELCOME = 0,                 // welcome page, waiting for START
   GAME_PLAYING,                     // working through taskOrder
   GAME_COMPLETE                     // Displaying Game Completion Page
 } GameState_t;

@@ -23,6 +23,8 @@
 #include "RockerSwitch.h"
 // CHEF Task 1: potentiometer event checker
 #include "Potentiometer.h"
+// CHEF: start push button event checker
+#include "StartButton.h"
 
 // Here you would #include the header files for any other modules that
 // contained event checking functions

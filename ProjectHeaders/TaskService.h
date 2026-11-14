@@ -20,6 +20,6 @@ bool InitTaskService(uint8_t Priority);
 bool PostTaskService(ES_Event_t ThisEvent);
 ES_Event_t RunTaskService(ES_Event_t ThisEvent);
 uint8_t QueryCurrentTask(void);
-bool QueryTask2Running(void);   // true while Task 2 is waiting for swipes
+// bool QueryTask2Running(void);   // no longer used: servo 2 now runs only at game completion (ES_GAME_OVER)
 
 #endif /* TaskService_H */

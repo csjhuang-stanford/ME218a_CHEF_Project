@@ -25,15 +25,16 @@ void main(void)
   // Pin map (PIC32MX170F256B, 28-pin):
   //   RB0/RB1 (4,5)    PGED1/PGEC1 programming
   //   RB6/RB7 (15,16)  CP2102 USB serial
-  //   RA0/RA1/RB14     SPI (SS / SDO / SCK)
+  //   RA0/RA1/RA2      link to the other PIC32
   //   RB5  (14)        break-beam input        (BeamBreak.c)
   //   RB8/9/10 (17,18,21) task LEDs            (TaskService.c)
   //   RB15 (26)        buzzer PWM, OC1         (Jay, was RB3)
   //   RB13 (24)        pot, AN11               (Potentiometer.c)
-  //   RA4  (12)        servo 1 PWM, OC4        (was RB11; RA4 can't use OC2)
-  //   RA3  (10)        servo 2 PWM, OC3
+  //   RA4  (12)        servo 1 PWM, OC4        (RA4 can't use OC2)
+  //   RB11 (22)        start push button, to GND (StartButton.c)
+  //   RA3  (10)        servo 2 PWM, OC3 (burger dispenser, positional)
   //   RB3, RB4, RB2, RB12 rocker switches 1-4 (RockerSwitch.c)
-  //   RA2, RB11        spare
+  //   RB14 (25)        spare (also SCK1, if the PIC-to-PIC link uses SPI1)
 
   // Buzzer: PWM ch 1 on Timer2. Servos: ch 4 (servo 1) and ch 3 (servo 2)
   // share Timer3 at 50 Hz. Ch 2 (OC2) is unused.
@@ -54,7 +55,7 @@ void main(void)
   PWMSetup_MapChannelToOutputPin(4, PWM_RPA4);
   PWMOperate_SetDutyOnChannel(0, 1);           // buzzer off to start
   PWMOperate_SetPulseWidthOnChannel(2500, 4);  // servo 1: 2500 ticks @ 2.5 MHz = 1 ms
-  PWMOperate_SetPulseWidthOnChannel(3750, 3);  // servo 2: 1.5 ms = stopped
+  PWMOperate_SetPulseWidthOnChannel(2500, 3);  // servo 2: 1 ms = rest (min)
 
 
   // now initialize the Events and Services Framework and start it running

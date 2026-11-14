@@ -13,7 +13,7 @@
 
    GAME_WELCOME  ("Welcome Page", currentTask = 0)
      entry                 : print welcome message
-     ES_NEW_KEY [SPACE]    : userScore = 0, taskIndex = 0,
+     ES_START_PRESSED      : userScore = 0, taskIndex = 0,
                              start gameTimer countdown,
                              ES_START_TASK(taskOrder[0]) -> TaskService,
                              start taskTimer
@@ -46,7 +46,7 @@
                              -> GAME_COMPLETE
 
    GAME_COMPLETE ("Displaying Game Completion Page")
-     ES_NEW_KEY [SPACE]    : -> GAME_WELCOME
+     ES_START_PRESSED      : -> GAME_WELCOME
 
    Inactivity timer: INACTIVE_TIMER is a single inactiveTimer-second timer,
    started with the game and restarted by every ES_USER_INPUT (pot, beam
@@ -62,8 +62,8 @@
    event on the state diagram.
 
  Notes
-   ES_NEW_KEY reaches this service because Check4Keystroke() in
-   EventCheckers.c posts it with ES_PostAll().
+   ES_START_PRESSED is posted here by Check4StartButton() in StartButton.c
+   (start push button on RB11; it replaced the keyboard SPACE bar).
    ES_TASK_COMPLETE is posted here by TaskService.
    Buzzer and servo 1 live in TestHarnessService0.
 
@@ -86,8 +86,10 @@
 #include "TaskService.h"           // runs the tasks
 #include "TestHarnessService0.h"   // buzzer + servo 1
 
+// Start push button (event checker module)
+#include "StartButton.h"
+
 /*----------------------------- Module Defines ----------------------------*/
-#define START_KEY        ' '       // space bar
 #define POINTS_PER_TASK  10        // added to userScore per completed task
 #define NUM_GAME_TASKS   50        // length of taskOrder (more than enough)
 #define ONE_SECOND       1000      // ms, GAME_TIMER tick
@@ -153,6 +155,7 @@ bool InitGameService(uint8_t Priority)
   ES_Event_t ThisEvent;
 
   MyPriority  = Priority;
+  InitStartButton();             // RB11 input with pull-up
   gameState   = GAME_WELCOME;
   taskIndex   = 0;
   userScore   = 0;
@@ -227,8 +230,7 @@ ES_Event_t RunGameService(ES_Event_t ThisEvent)
       {
         PrintWelcome();
       }
-      else if ((ES_NEW_KEY == ThisEvent.EventType) &&
-               (START_KEY == ThisEvent.EventParam))
+      else if (ES_START_PRESSED == ThisEvent.EventType)
       {
         StartGame();
         gameState = GAME_PLAYING;
@@ -289,8 +291,7 @@ ES_Event_t RunGameService(ES_Event_t ThisEvent)
     /*--------------------------------------------------------------------*/
     case GAME_COMPLETE:
     {
-      if ((ES_NEW_KEY == ThisEvent.EventType) &&
-          (START_KEY == ThisEvent.EventParam))
+      if (ES_START_PRESSED == ThisEvent.EventType)
       {
         gameState = GAME_WELCOME;
         PrintWelcome();               // entry action of GAME_WELCOME
@@ -332,7 +333,7 @@ uint16_t QueryUserScore(void)
 static void PrintWelcome(void)
 {
   DB_printf("\r\nWelcome to Hell's Kitchen with Gordan Ramsay!\r\n");
-  DB_printf("Press SPACE to start\r\n\r\n");
+  DB_printf("Press START to begin\r\n\r\n");
 }
 
 /****************************************************************************
@@ -340,7 +341,7 @@ static void PrintWelcome(void)
      StartGame
 
  Description
-     SPACE on the welcome page: reset the score, start the game clock and
+     START pressed on the welcome page: reset the score, start the game clock and
      the first task in taskOrder.
 ****************************************************************************/
 static void StartGame(void)
@@ -427,7 +428,7 @@ static void EndGame(void)
   DB_printf("Game Completed!\r\n");
   DB_printf("Score: %d\r\n", userScore);
   DB_printf("Total tasks completed: %d\r\n", tasksCompleted);
-  DB_printf("Press SPACE to return to the welcome page\r\n");
+  DB_printf("Press START to return to the welcome page\r\n");
 
   PostToTestHarness(ES_GAME_OVER, 0);   // long beep
 }
