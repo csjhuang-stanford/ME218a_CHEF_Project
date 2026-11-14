@@ -53,12 +53,12 @@
 #define TWO_SEC (ONE_SEC * 2)
 #define FIVE_SEC (ONE_SEC * 5)
 #define BEEP_FREQ     2000     // Hz, "task complete" beep
-#define BEEP_DURATION 1000     // ms (1 second)
+#define BEEP_DURATION 500     // ms (1 second)
 // 1 = show the framework test-harness prints (banner, key echo, timer
 // announcements), 0 = hide them so only the game prints show
 #define SHOW_DEBUG_PRINTS 0
 
-#define BUZZER_ON     false     // true = real beep, false = print "BEEP!" only
+#define BUZZER_ON     true     // true = real beep, false = print "BEEP!" only
 
 // Servo pulse widths in PWM ticks (2.5 MHz: 2500 = 1 ms)
 // For continuous-rotation servos: 1.5 ms = stop, 2 ms = full speed one way,
