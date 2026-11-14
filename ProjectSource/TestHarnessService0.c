@@ -42,6 +42,8 @@
 #include "ES_Port.h"
 #include "terminal.h"
 #include "dbprintf.h"
+#include "DisplayLink.h"        // tell the display PIC32 about the burger
+#include "GameService.h"        // QueryGameState()
 #include "EventPrint.h"
 #include "PWM_PIC32.h"     // Jay: buzzer + servo PWM
 
@@ -140,6 +142,7 @@ static uint16_t      Servo2HoldCount;
 static void StartServo2Dispense(void)
 {
   DB_printf("Dispensing Burger!\r\n");
+  DisplayLine(3, DISP_ORANGE, "BURGER!");
   Servo2Pulse = SERVO_MIN_PULSE;
   Servo2State = SERVO2_SWEEPING_UP;
 }
@@ -270,6 +273,10 @@ static void moveServo(void)
         Servo2Pulse = SERVO_MIN_PULSE;
         Servo2State = SERVO2_RESTING;
         DB_printf("Burger Dispensed!\r\n");
+        if (GAME_COMPLETE == QueryGameState())   // still on that page
+        {
+          DisplayLine(3, DISP_WHITE, "PRESS START");
+        }
       }
       else
       {

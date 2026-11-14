@@ -15,6 +15,7 @@
 #include "ES_Framework.h"
 #include "ES_Port.h"
 #include "PWM_PIC32.h"     // Jay: buzzer + servo
+#include "DisplayLink.h"    // SPI1 link to the display PIC32
 
 void main(void)
 {
@@ -25,7 +26,9 @@ void main(void)
   // Pin map (PIC32MX170F256B, 28-pin):
   //   RB0/RB1 (4,5)    PGED1/PGEC1 programming
   //   RB6/RB7 (15,16)  CP2102 USB serial
-  //   RA0/RA1/RA2      link to the other PIC32
+  //   RA0  (2)         SPI CS   -> display PIC32 RB15 (SS1) (DisplayLink.c)
+  //   RA1  (3)         SPI SDO1 -> display PIC32 RB11
+  //   RB14 (25)        SPI SCK1 -> display PIC32 RB14 (fixed SCK1 pin)
   //   RB5  (14)        break-beam input        (BeamBreak.c)
   //   RB8/9/10 (17,18,21) task LEDs            (TaskService.c)
   //   RB15 (26)        buzzer PWM, OC1         (Jay, was RB3)
@@ -34,7 +37,12 @@ void main(void)
   //   RB11 (22)        start push button, to GND (StartButton.c)
   //   RA3  (10)        servo 2 PWM, OC3 (burger dispenser, positional)
   //   RB3, RB4, RB2, RB12 rocker switches 1-4 (RockerSwitch.c)
-  //   RB14 (25)        spare (also SCK1, if the PIC-to-PIC link uses SPI1)
+  //   RA2  (9)         spare (SCK can't be remapped to it)
+
+  // SPI1 link to the display PIC32. Must come BEFORE the PWM setup:
+  // it writes a PPS register (RPA1R = SDO1), and if the PWM library locks
+  // the PPS registers afterwards that write would be ignored.
+  InitDisplayLink();
 
   // Buzzer: PWM ch 1 on Timer2. Servos: ch 4 (servo 1) and ch 3 (servo 2)
   // share Timer3 at 50 Hz. Ch 2 (OC2) is unused.

@@ -89,12 +89,16 @@
 // Start push button (event checker module)
 #include "StartButton.h"
 
+// SPI link to the display PIC32
+#include "DisplayLink.h"
+
 /*----------------------------- Module Defines ----------------------------*/
 #define POINTS_PER_TASK  10        // added to userScore per completed task
 #define NUM_GAME_TASKS   50        // length of taskOrder (more than enough)
 #define ONE_SECOND       1000      // ms, GAME_TIMER tick
 #define TASK_IDLE        0         // ES_START_TASK(0) = stop, LEDs off
 #define TASK_MASK        0x00FF    // low byte of ES_START_TASK param = task
+#define DISPLAY_REPAINT_TIME 1000  // ms: welcome screen repaint period
 #define TASK_SWITCH      3         // Task 3 (rocker switches) gets extra time
 #define TASK3_TIME_NUM   3         // Task 3 time = 3/2 x taskTimer (1.5x,
 #define TASK3_TIME_DEN   2         //   15 s): stays below inactiveTimer
@@ -106,6 +110,9 @@ static void StartTask(uint8_t Task);
 static void NextTask(void);
 static void EndGame(void);
 static void ResetToWelcome(void);
+static void DrawWelcomeScreen(void);
+static void DrawWelcomeLines(void);
+static void DrawStatusLine(void);
 static void PostToTestHarness(ES_EventType_t Type, uint16_t Param);
 
 /*---------------------------- Module Variables ---------------------------*/
@@ -206,6 +213,7 @@ ES_Event_t RunGameService(ES_Event_t ThisEvent)
       {
         secondsLeft--;
       }
+      DrawStatusLine();             // display line 3: score + time left
       if (0 == secondsLeft)
       {
         ES_Event_t Expired;
@@ -229,6 +237,14 @@ ES_Event_t RunGameService(ES_Event_t ThisEvent)
       if (ES_INIT == ThisEvent.EventType)
       {
         PrintWelcome();
+      }
+      else if ((ES_TIMEOUT == ThisEvent.EventType) &&
+               (DISPLAY_TIMER == ThisEvent.EventParam))
+      {
+        // keep repainting while on the welcome page, so the display is
+        // correct even if the display PIC32 starts late or is reset
+        DrawWelcomeLines();
+        ES_Timer_InitTimer(DISPLAY_TIMER, DISPLAY_REPAINT_TIME);
       }
       else if (ES_START_PRESSED == ThisEvent.EventType)
       {
@@ -334,6 +350,8 @@ static void PrintWelcome(void)
 {
   DB_printf("\r\nWelcome to Hell's Kitchen with Gordan Ramsay!\r\n");
   DB_printf("Press START to begin\r\n\r\n");
+  DrawWelcomeScreen();
+  ES_Timer_InitTimer(DISPLAY_TIMER, DISPLAY_REPAINT_TIME);   // repaint loop
 }
 
 /****************************************************************************
@@ -354,6 +372,8 @@ static void StartGame(void)
   ES_Timer_InitTimer(INACTIVE_TIMER, (uint16_t)(inactiveTimer * ONE_SECOND));
 
   DB_printf("\r\nGame started! You have %d seconds.\r\n", gameTimer);
+  DisplayClear();                  // TaskService draws lines 0-2,
+                                   // StartTask() draws line 3
   StartTask(taskOrder[taskIndex]);
 }
 
@@ -394,6 +414,7 @@ static void StartTask(uint8_t Task)
 
   DB_printf("Score: %d\r\n", userScore);
   DB_printf("You have %d seconds for this task\r\n", thisTaskTime);
+  DrawStatusLine();                // display line 3: score + time left
 
   attempt++;
   currentStartParam = ((uint16_t)attempt << 8) | Task;
@@ -430,6 +451,13 @@ static void EndGame(void)
   DB_printf("Total tasks completed: %d\r\n", tasksCompleted);
   DB_printf("Press START to return to the welcome page\r\n");
 
+  // Game Completion Page on the display
+  DisplayClear();
+  DisplayLine(0, DISP_RED, "TIME UP!");
+  DisplayLinef(1, DISP_YELLOW, "SCORE %d", userScore);
+  DisplayLinef(2, DISP_CYAN, "TASKS %d", tasksCompleted);
+  DisplayLine(3, DISP_WHITE, "PRESS START");
+
   PostToTestHarness(ES_GAME_OVER, 0);   // long beep
 }
 
@@ -458,6 +486,42 @@ static void ResetToWelcome(void)
   taskIndex      = 0;
 
   PrintWelcome();                  // entry action of GAME_WELCOME
+}
+
+/****************************************************************************
+ Function
+     DrawWelcomeScreen
+
+ Description
+     Welcome page on the display PIC32 (4 lines)
+****************************************************************************/
+static void DrawWelcomeScreen(void)
+{
+  DisplayClear();
+  DrawWelcomeLines();
+}
+
+// the 4 welcome lines without clearing first (each line clears itself),
+// used for the once-a-second repaint so the screen doesn't blink
+static void DrawWelcomeLines(void)
+{
+  DisplayLine(0, DISP_ORANGE, "HELL'S");
+  DisplayLine(1, DISP_RED,    "KITCHEN");
+  DisplayLine(2, DISP_WHITE,  "PRESS");
+  DisplayLine(3, DISP_GREEN,  "START");
+}
+
+/****************************************************************************
+ Function
+     DrawStatusLine
+
+ Description
+     Bottom display line while playing: score and game seconds left,
+     e.g. "40PT 52S"
+****************************************************************************/
+static void DrawStatusLine(void)
+{
+  DisplayLinef(3, DISP_YELLOW, "%dPT %dS", userScore, secondsLeft);
 }
 
 /****************************************************************************

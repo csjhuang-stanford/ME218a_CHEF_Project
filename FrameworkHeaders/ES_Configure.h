@@ -333,7 +333,7 @@ typedef enum
 #define TIMER6_RESP_FUNC TIMER_UNUSED
 #define TIMER7_RESP_FUNC TIMER_UNUSED
 #define TIMER8_RESP_FUNC TIMER_UNUSED
-#define TIMER9_RESP_FUNC TIMER_UNUSED
+#define TIMER9_RESP_FUNC PostGameService     // CHEF display startup repaint
 #define TIMER10_RESP_FUNC PostTaskService    // CHEF Task 1 print timer
 #define TIMER11_RESP_FUNC PostGameService    // CHEF game clock
 #define TIMER12_RESP_FUNC PostGameService    // CHEF per-task time limit
@@ -349,6 +349,7 @@ typedef enum
 // the timer number matches where the timer event will be routed
 // These symbolic names should be changed to be relevant to your application
 
+#define DISPLAY_TIMER 9       // CHEF: repaint welcome screen after startup
 #define GAME_TIMER 11         // CHEF: game clock, ticks every 1 s
 #define TASK_TIMER 12         // CHEF: per-task time limit (taskTimer)
 #define INACTIVE_TIMER 15     // CHEF: no-user-input limit (inactiveTimer)

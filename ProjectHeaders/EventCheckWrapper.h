@@ -25,6 +25,7 @@
 #include "Potentiometer.h"
 // CHEF: start push button event checker
 #include "StartButton.h"
+// CHEF: SPI link to the display PIC32 (sends queued messages)
 
 // Here you would #include the header files for any other modules that
 // contained event checking functions
