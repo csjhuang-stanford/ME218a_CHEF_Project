@@ -21,6 +21,8 @@ typedef enum
 {
   GAME_WELCOME = 0,                 // welcome page, waiting for START
   GAME_PLAYING,                     // working through taskOrder
+  GAME_SERVING,                     // game over, burger servo running:
+                                    //   START is ignored
   GAME_COMPLETE                     // Displaying Game Completion Page
 } GameState_t;
 

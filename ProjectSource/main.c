@@ -16,6 +16,7 @@
 #include "ES_Port.h"
 #include "PWM_PIC32.h"     // Jay: buzzer + servo
 #include "DisplayLink.h"    // SPI1 link to the display PIC32
+#include "dbprintf.h"       // report PWM pin-mapping failures
 
 void main(void)
 {
@@ -58,9 +59,20 @@ void main(void)
   PWMSetup_AssignChannelToTimer(4, _Timer3_);  // servo 1
   PWMSetup_SetFreqOnTimer(1000, _Timer2_);
   PWMSetup_SetFreqOnTimer(50, _Timer3_);
-  PWMSetup_MapChannelToOutputPin(1, PWM_RPB15);
-  PWMSetup_MapChannelToOutputPin(3, PWM_RPA3);
-  PWMSetup_MapChannelToOutputPin(4, PWM_RPA4);
+  // each mapping returns false if the pin can't be used (wrong channel for
+  // that pin, or the pin registers are locked): report it on PuTTY
+  if (!PWMSetup_MapChannelToOutputPin(1, PWM_RPB15))
+  {
+    DB_printf("PWM ERROR: buzzer channel 1 -> RB15 failed\r\n");
+  }
+  if (!PWMSetup_MapChannelToOutputPin(3, PWM_RPA3))
+  {
+    DB_printf("PWM ERROR: servo 2 channel 3 -> RA3 failed\r\n");
+  }
+  if (!PWMSetup_MapChannelToOutputPin(4, PWM_RPA4))
+  {
+    DB_printf("PWM ERROR: servo 1 channel 4 -> RA4 failed\r\n");
+  }
   PWMOperate_SetDutyOnChannel(0, 1);           // buzzer off to start
   PWMOperate_SetPulseWidthOnChannel(2500, 4);  // servo 1: 2500 ticks @ 2.5 MHz = 1 ms
   PWMOperate_SetPulseWidthOnChannel(2500, 3);  // servo 2: 1 ms = rest (min)

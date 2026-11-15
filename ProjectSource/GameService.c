@@ -31,7 +31,8 @@
        next task           : taskIndex++, print score,
                              ES_START_TASK(taskOrder[taskIndex]),
                              restart taskTimer
-     ES_USER_INPUT         : restart inactiveTimer
+     ES_USER_INPUT or ES_START_PRESSED
+                           : restart inactiveTimer
                              -> stay in GAME_PLAYING
      ES_TIMEOUT(INACTIVE_TIMER) ("inactiveTimer expired")
                            : print "Inactive for # seconds!", stop all
@@ -42,7 +43,12 @@
                              ES_START_TASK(0) (currentTask = 0, LEDs off),
                              unfinished task scores nothing,
                              print "Game Completed!" and final score,
-                             long beep
+                             long beep + burger servo starts
+                             -> GAME_SERVING
+
+   GAME_SERVING ("Serving Burger")
+     ES_START_PRESSED      : ignored (can't restart mid-dispense)
+     ES_BURGER_DISPENSED   : display line 2 "BON APETITE!"
                              -> GAME_COMPLETE
 
    GAME_COMPLETE ("Displaying Game Completion Page")
@@ -143,13 +149,18 @@ static uint16_t inactiveTimer = 20;
 static uint16_t currentStartParam; // param of the task now running
 
 // Game order: the tasks are played in this order, one after another,
-// until gameTimer runs out. Repeating 1, 2, 3 for now, randomize later.
+// until gameTimer runs out. Pre-generated random order of 1, 2 and 3
+// (17 x Task 1, 15 x Task 2, 18 x Task 3).
+//   - the same task may come up twice in a row, but never 3 or more times
+//     (also across the wrap from the last entry back to the first)
+//   - a repeated task still needs new input: each task's target list
+//     never repeats a value back to back
 static uint8_t taskOrder[NUM_GAME_TASKS] = {
-  1, 2, 3, 1, 2, 3, 1, 2, 3, 1,
-  2, 3, 1, 2, 3, 1, 2, 3, 1, 2,
-  3, 1, 2, 3, 1, 2, 3, 1, 2, 3,
-  1, 2, 3, 1, 2, 3, 1, 2, 3, 1,
-  2, 3, 1, 2, 3, 1, 2, 3, 1, 2
+  1, 3, 2, 3, 3, 1, 2, 1, 3, 1,
+  3, 1, 3, 2, 1, 2, 3, 3, 1, 1,
+  2, 3, 2, 3, 3, 1, 1, 3, 2, 1,
+  1, 2, 2, 1, 2, 3, 2, 3, 2, 1,
+  3, 2, 1, 2, 1, 1, 3, 2, 3, 3
 };
 static uint8_t  taskIndex;         // position in taskOrder of current task
 static uint16_t userScore;         // POINTS_PER_TASK per completed task
@@ -288,10 +299,16 @@ ES_Event_t RunGameService(ES_Event_t ThisEvent)
         // event: taskTimer expired -> no points, move on
         DB_printf("Task %d Timed Out! No points.\r\n",
                   currentStartParam & TASK_MASK);
+        // beep anyway, so the player knows to look at the new task
+        PostToTestHarness(ES_TASK_TIMED_OUT,
+                          currentStartParam & TASK_MASK);
         NextTask();
       }
-      else if (ES_USER_INPUT == ThisEvent.EventType)
+      else if ((ES_USER_INPUT == ThisEvent.EventType) ||
+               (ES_START_PRESSED == ThisEvent.EventType))
       {
+        // pot / beam / switch input, or a START press (which does nothing
+        // else while playing), counts as activity
         // someone is playing: restart the inactivity countdown
         ES_Timer_InitTimer(INACTIVE_TIMER,
                            (uint16_t)(inactiveTimer * ONE_SECOND));
@@ -309,6 +326,20 @@ ES_Event_t RunGameService(ES_Event_t ThisEvent)
         ES_Timer_StopTimer(TASK_TIMER);
         ES_Timer_StopTimer(INACTIVE_TIMER);
         EndGame();
+        gameState = GAME_SERVING;   // restart locked until burger is out
+      }
+    }
+    break;
+
+    /*--------------------------------------------------------------------*/
+    case GAME_SERVING:
+    {
+      // ES_START_PRESSED is deliberately not handled here: the restart
+      // button does nothing until the burger has been dispensed
+      if (ES_BURGER_DISPENSED == ThisEvent.EventType)
+      {
+        DB_printf("Burger served! Press START to restart\r\n");
+        DisplayLine(2, DISP_GREEN, "BON APPETIT!");   // only line 2 changes
         gameState = GAME_COMPLETE;
       }
     }

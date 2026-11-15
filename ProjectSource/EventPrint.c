@@ -61,6 +61,8 @@ const char *EventName(ES_EventType_t EventType)
     case ES_TASK_COMPLETE:          return "ES_TASK_COMPLETE";
     case ES_USER_INPUT:             return "ES_USER_INPUT";
     case ES_START_PRESSED:          return "ES_START_PRESSED";
+    case ES_BURGER_DISPENSED:       return "ES_BURGER_DISPENSED";
+    case ES_TASK_TIMED_OUT:         return "ES_TASK_TIMED_OUT";
     default:                        return "ES_UNKNOWN_EVENT";
   }
 }

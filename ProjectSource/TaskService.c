@@ -24,13 +24,22 @@
    Only the current task's LED is on (solid); the others are off.
 
    Task 1 (potentiometer):
-     State: "Waiting for currentPot within +/- 10% of targetPot"
+     State TASK1_WAITING: "Waiting for currentPot within +/- 10% of
+       targetPot"
        entry            : targetPot = next entry of targetPotOrder (0..10,
                           mapped to 0..1023), print targetPot and
-                          currentPot, start print timer
-       print timer      : print "currentPot = #" every TASK1_PRINT_TIME ms
-       ES_POT_CHANGED and currentPot outside the range : stay
-       ES_POT_CHANGED and currentPot inside the range  : task complete
+                          currentPot, start print timer (if the pot is
+                          already in range, go straight to DWELLING)
+       ES_POT_CHANGED [in range]     : start dwell timer -> TASK1_DWELLING
+       ES_POT_CHANGED [out of range] : stay
+     State TASK1_DWELLING: "Holding the pot in range" (1 s)
+       ES_POT_CHANGED [out of range] : stop dwell timer -> TASK1_WAITING
+       ES_POT_CHANGED [in range]     : stay (dwell timer keeps running)
+       ES_TIMEOUT(TASK1_DWELL_TIMER) [still in range] : task complete
+     Both states: print timer prints "currentPot = #" every
+     TASK1_PRINT_TIME ms.
+     The dwell stops a quick sweep across the whole pot from counting:
+     the pot must stay inside the target range for TASK1_DWELL_TIME.
 
    Task 2 (beam-break swipes):
      State: "Waiting for currentSwipes == targetSwipes"
@@ -58,7 +67,7 @@
    ES_POT_CHANGED is posted here by Check4PotChange() in Potentiometer.c.
    ES_SWITCH_CHANGED is posted here by Check4RockerSwitch() in
    RockerSwitch.c.
-   Timers: TASK1_PRINT_TIMER (see ES_Configure.h).
+   Timers: TASK1_PRINT_TIMER, TASK1_DWELL_TIMER (see ES_Configure.h).
 
  History
  When           Who     What/Why
@@ -107,6 +116,7 @@
 #define POT_FULL_SCALE       1023  // 10-bit ADC
 #define TASK1_TOLERANCE      102   // 10% of full scale (1023)
 #define TASK1_PRINT_TIME     500   // ms between "currentPot = #" prints
+#define TASK1_DWELL_TIME     500  // ms the pot must stay in range
 
 // Task 2
 #define NUM_TASK2_TARGETS    30    // length of targetSwipesOrder
@@ -117,7 +127,8 @@
 typedef enum
 {
   TASK1_INACTIVE = 0,              // Task 1 not running
-  TASK1_WAITING                    // waiting for pot within tolerance
+  TASK1_WAITING,                   // waiting for pot within tolerance
+  TASK1_DWELLING                   // in range, must stay there 1 s
 } Task1State_t;
 
 typedef enum
@@ -140,6 +151,7 @@ static void AllLEDsOff(void);
 static void TaskLEDOn(uint8_t WhichTask);
 static void StartTask1(void);
 static bool PotInRange(uint16_t Pot);
+static void StartTask1Dwell(uint16_t Pot);
 static void StartTask2(void);
 static void StartTask3(void);
 static void PrintBinary(uint8_t Value);
@@ -319,19 +331,31 @@ ES_Event_t RunTaskService(ES_Event_t ThisEvent)
 
     case ES_POT_CHANGED:   // pot moved, param = new reading 0..1023
     {
+      uint16_t currentPot = (uint16_t)ThisEvent.EventParam;
+      // ShowPotLevel(currentPot);   // (removed: user doesn't see the
+      //                            //  current value; line 2 = score)
+
       if (TASK1_WAITING == Task1State)
       {
-        uint16_t currentPot = (uint16_t)ThisEvent.EventParam;
-        // ShowPotLevel(currentPot);   // (removed: user doesn't see the
-        //                            //  current value; line 2 = score)
-
         if (PotInRange(currentPot))
         {
-          // event: currentPot within +/- 10% of targetPot -> task complete
-          DB_printf("currentPot = %d\r\n", currentPot);
-          CompleteCurrentTask();
+          // entered the target range: start the 1 s hold
+          StartTask1Dwell(currentPot);
         }
-        // otherwise: outside the range, stay in Task 1
+        // otherwise: outside the range, keep waiting
+      }
+      else if (TASK1_DWELLING == Task1State)
+      {
+        if (!PotInRange(currentPot))
+        {
+          // left the range before the hold time was up (e.g. sweeping
+          // across the pot): start over
+          ES_Timer_StopTimer(TASK1_DWELL_TIMER);
+          Task1State = TASK1_WAITING;
+          DB_printf("currentPot = %d, left the range: hold reset\r\n",
+                    currentPot);
+        }
+        // still in range: keep holding, the dwell timer keeps running
       }
     }
     break;
@@ -374,9 +398,23 @@ ES_Event_t RunTaskService(ES_Event_t ThisEvent)
 
     case ES_TIMEOUT:
     {
-      if (TASK1_PRINT_TIMER == ThisEvent.EventParam)  // Task 1 print
+      if (TASK1_DWELL_TIMER == ThisEvent.EventParam)  // Task 1 hold done
       {
-        if (TASK1_WAITING == Task1State)
+        // held in range for TASK1_DWELL_TIME: check once more, then done
+        if ((TASK1_DWELLING == Task1State) && PotInRange(QueryCurrentPot()))
+        {
+          DB_printf("currentPot = %d, held for %d ms\r\n",
+                    QueryCurrentPot(), TASK1_DWELL_TIME);
+          CompleteCurrentTask();
+        }
+        else if (TASK1_DWELLING == Task1State)
+        {
+          Task1State = TASK1_WAITING;   // drifted out at the last moment
+        }
+      }
+      else if (TASK1_PRINT_TIMER == ThisEvent.EventParam)  // Task 1 print
+      {
+        if (TASK1_INACTIVE != Task1State)
         {
           DB_printf("currentPot = %d\r\n", QueryCurrentPot());
           ES_Timer_InitTimer(TASK1_PRINT_TIMER, TASK1_PRINT_TIME);
@@ -463,12 +501,13 @@ static void SetTask(uint8_t NewTask)
      StopAllTasks
 
  Description
-     Every task goes inactive and Task 1's print timer stops, so no
+     Every task goes inactive and Task 1's timers stop, so no
      sensor event can complete a task until the next ES_START_TASK.
 ****************************************************************************/
 static void StopAllTasks(void)
 {
   ES_Timer_StopTimer(TASK1_PRINT_TIMER);
+  ES_Timer_StopTimer(TASK1_DWELL_TIMER);
   Task1State = TASK1_INACTIVE;
   Task2State = TASK2_INACTIVE;
   Task3State = TASK3_INACTIVE;
@@ -524,6 +563,29 @@ static void StartTask1(void)
   // lastShownPotLevel = 0xFF;                          // (current value
   // ShowPotLevel(QueryCurrentPot());                   //  no longer shown)
   ES_Timer_InitTimer(TASK1_PRINT_TIMER, TASK1_PRINT_TIME);
+
+  // already sitting in the new range? start holding right away (no pot
+  // movement means no ES_POT_CHANGED, so this wouldn't happen otherwise)
+  if (PotInRange(QueryCurrentPot()))
+  {
+    StartTask1Dwell(QueryCurrentPot());
+  }
+}
+
+/****************************************************************************
+ Function
+     StartTask1Dwell
+
+ Description
+     The pot just came inside the target range: start the hold timer.
+     Task 1 only completes if it is still in range when the timer expires.
+****************************************************************************/
+static void StartTask1Dwell(uint16_t Pot)
+{
+  Task1State = TASK1_DWELLING;
+  ES_Timer_InitTimer(TASK1_DWELL_TIMER, TASK1_DWELL_TIME);
+  DB_printf("currentPot = %d, in range: hold for %d ms\r\n",
+            Pot, TASK1_DWELL_TIME);
 }
 
 /****************************************************************************

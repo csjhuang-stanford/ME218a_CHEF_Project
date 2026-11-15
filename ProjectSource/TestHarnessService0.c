@@ -43,7 +43,7 @@
 #include "terminal.h"
 #include "dbprintf.h"
 #include "DisplayLink.h"        // tell the display PIC32 about the burger
-#include "GameService.h"        // QueryGameState()
+#include "GameService.h"        // PostGameService(): burger dispensed
 #include "EventPrint.h"
 #include "PWM_PIC32.h"     // Jay: buzzer + servo PWM
 
@@ -54,12 +54,14 @@
 #define TWO_SEC (ONE_SEC * 2)
 #define FIVE_SEC (ONE_SEC * 5)
 #define BEEP_FREQ     2000     // Hz, "task complete" beep
-#define BEEP_DURATION 1000     // ms (1 second)
+#define BEEP_DURATION 500     // ms (1 second)
+#define TIMEOUT_BEEP_FREQ 400  // Hz, lower "time's up, next task" beep
+                               // (set to BEEP_FREQ for the same sound)
 // 1 = show the framework test-harness prints (banner, key echo, timer
 // announcements), 0 = hide them so only the game prints show
 #define SHOW_DEBUG_PRINTS 0
 
-#define BUZZER_ON     false     // true = real beep, false = print "BEEP!" only
+#define BUZZER_ON     true     // true = real beep, false = print "BEEP!" only
 
 // Servo pulse widths in PWM ticks (2.5 MHz: 2500 = 1 ms)
 
@@ -68,7 +70,8 @@
 #define SERVO2_CHANNEL     3      // OC3 on RA3, positional ("burger" servo)
 
 // Servo 1 (RA4, positional) rests at one end. When Task 3 completes it
-// sweeps once from min to max, holds briefly, then returns to rest.
+// sweeps min -> max, holds briefly, then sweeps max -> min at the same
+// pace (SERVO_SWEEP_STEP both ways) back to rest.
 #define SERVO1_TASK        3      // completing this task triggers the sweep
 #define SERVO_MIN_PULSE    2500   // 1.0 ms = one end (rest)
 #define SERVO_MAX_PULSE    5000   // 2.0 ms = other end
@@ -78,6 +81,10 @@
 // Servo 2 (RA3, positional) rests at min. When the whole game is completed
 // it sweeps min -> max, holds SERVO2_HOLD_TIME, sweeps max -> min.
 #define SERVO2_HOLD_TIME   3000   // ms to hold at max ("dispensing")
+
+// Test: 1 = both servos do their motion once right after power-up, so you
+// can check wiring and power without playing a whole game. Set back to 0.
+#define SERVO_POWERUP_TEST 0
 
 #define ENTER_POST     ((MyPriority<<3)|0)
 #define ENTER_RUN      ((MyPriority<<3)|1)
@@ -111,7 +118,8 @@ typedef enum
 {
   SERVO1_RESTING = 0,              // parked at SERVO_MIN_PULSE
   SERVO1_SWEEPING,                 // moving min -> max
-  SERVO1_HOLDING                   // at max, waiting before return
+  SERVO1_HOLDING,                  // at max, waiting before return
+  SERVO1_SWEEPING_DOWN             // moving max -> min, same pace
 } Servo1State_t;
 
 static Servo1State_t Servo1State = SERVO1_RESTING;
@@ -171,6 +179,8 @@ static const MelodyNote_t Melody[] = {
 // Buzzer on at BEEP_FREQ; BUZZER_TIMER turns it off after BEEP_DURATION.
 // A second completion during a beep just restarts the 1 s.
 // With BUZZER_ON false (quiet debugging) it only prints "BEEP!".
+static void StartTimeoutBeep(void);
+
 static void StartBeep(void)
 {
   if (BUZZER_ON)
@@ -182,6 +192,23 @@ static void StartBeep(void)
   else
   {
     DB_printf("BEEP!\r\n");
+  }
+}
+
+// Task ran out of time: same length as the task-complete beep, lower
+// pitch, so the player hears that the task changed (and that it was missed).
+// With BUZZER_ON false it only prints "BEEP! (time out)".
+static void StartTimeoutBeep(void)
+{
+  if (BUZZER_ON)
+  {
+    PWMSetup_SetFreqOnTimer(TIMEOUT_BEEP_FREQ, _Timer2_);
+    PWMOperate_SetDutyOnChannel(50, 1);
+    ES_Timer_InitTimer(BUZZER_TIMER, BEEP_DURATION);
+  }
+  else
+  {
+    DB_printf("BEEP! (time out)\r\n");
   }
 }
 
@@ -229,8 +256,21 @@ static void moveServo(void)
     {
       if (++Servo1HoldCount >= SERVO1_HOLD_TIME)
       {
-        Servo1Pulse = SERVO_MIN_PULSE;    // back to rest
+        Servo1State = SERVO1_SWEEPING_DOWN;   // return smoothly
+      }
+    }
+    break;
+
+    case SERVO1_SWEEPING_DOWN:   // same step size as the way up
+    {
+      if (Servo1Pulse <= (SERVO_MIN_PULSE + SERVO_SWEEP_STEP))
+      {
+        Servo1Pulse = SERVO_MIN_PULSE;    // back at rest
         Servo1State = SERVO1_RESTING;
+      }
+      else
+      {
+        Servo1Pulse -= SERVO_SWEEP_STEP;
       }
     }
     break;
@@ -274,10 +314,13 @@ static void moveServo(void)
         Servo2Pulse = SERVO_MIN_PULSE;
         Servo2State = SERVO2_RESTING;
         DB_printf("Burger Dispensed!\r\n");
-        // opening + hold + closing done: only line 2 changes
-        if (GAME_COMPLETE == QueryGameState())   // still on that page
+        // opening + hold + closing done: tell GameService, which unlocks
+        // the restart button and shows "BON APETITE!"
         {
-          DisplayLine(2, DISP_GREEN, "BON APPETIT!");
+          ES_Event_t DoneEvent;
+          DoneEvent.EventType  = ES_BURGER_DISPENSED;
+          DoneEvent.EventParam = 0;
+          PostGameService(DoneEvent);
         }
       }
       else
@@ -426,6 +469,11 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
     case ES_INIT:
     {
       ES_Timer_InitTimer(SERVO_MOVE_TIMER, ONE_SEC);   // Jay: start servo updates
+#if SERVO_POWERUP_TEST
+      DB_printf("SERVO TEST: servo 1 sweep + servo 2 dispense\r\n");
+      StartServo1Sweep();
+      StartServo2Dispense();
+#endif
       PWMOperate_SetDutyOnChannel(0, 1);   // buzzer silent until a task completes
 #if SHOW_DEBUG_PRINTS
       puts("Service 00:");
@@ -452,6 +500,11 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
         moveServo();
         ES_Timer_InitTimer(SERVO_MOVE_TIMER, 1);
       }
+    }
+    break;
+    case ES_TASK_TIMED_OUT:  // task not completed in time: next-task beep
+    {
+      StartTimeoutBeep();
     }
     break;
     case ES_GAME_OVER:       // whole game completed: long beep + burger

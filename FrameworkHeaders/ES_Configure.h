@@ -276,6 +276,8 @@ typedef enum
   ES_GAME_OVER,             /* CHEF: GameService -> Service 0: long buzzer sound */
   ES_GAME_TIMER_EXPIRED,    /* CHEF: GameService countdown reached 0 */
   ES_START_PRESSED,         /* CHEF: start button pressed (StartButton.c -> GameService) */
+  ES_BURGER_DISPENSED,      /* CHEF: burger servo back at rest (Service 0 -> GameService) */
+  ES_TASK_TIMED_OUT,        /* CHEF: GameService -> Service 0: task ran out of time, beep */
   ES_USER_INPUT,            /* CHEF: TaskService -> GameService: pot, beam or switch input */
   ES_START_TASK,            /* CHEF: GameService -> TaskService, param = (attempt << 8) | task, task 0 = stop */
   ES_TASK_COMPLETE          /* CHEF: TaskService -> GameService (param = ES_START_TASK param echoed),
@@ -332,7 +334,7 @@ typedef enum
 #define TIMER5_RESP_FUNC TIMER_UNUSED
 #define TIMER6_RESP_FUNC TIMER_UNUSED
 #define TIMER7_RESP_FUNC TIMER_UNUSED
-#define TIMER8_RESP_FUNC TIMER_UNUSED
+#define TIMER8_RESP_FUNC PostTaskService     // CHEF Task 1 dwell (hold) timer
 #define TIMER9_RESP_FUNC PostGameService     // CHEF display startup repaint
 #define TIMER10_RESP_FUNC PostTaskService    // CHEF Task 1 print timer
 #define TIMER11_RESP_FUNC PostGameService    // CHEF game clock
@@ -354,6 +356,7 @@ typedef enum
 #define TASK_TIMER 12         // CHEF: per-task time limit (taskTimer)
 #define INACTIVE_TIMER 15     // CHEF: no-user-input limit (inactiveTimer)
 #define TASK1_PRINT_TIMER 10  // CHEF Task 1: periodic currentPot print
+#define TASK1_DWELL_TIMER 8   // CHEF Task 1: pot must stay in range this long
 #define BUZZER_TIMER 13       // 1 s task-complete beep
 #define SERVO_MOVE_TIMER 14   // Jay: pot -> servo update
 
