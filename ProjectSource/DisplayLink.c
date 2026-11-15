@@ -40,6 +40,9 @@
 #define MSG_END         0x00
 #define CMD_CLEAR       'C'
 #define CMD_LINE        'L'
+#define CMD_TEXT_AT     'P'
+#define CMD_ICON        'I'
+#define NUM_OFFSET      '0'         // numbers are sent as '0' + value
 
 #define MAX_TEXT        20          // follower ignores anything longer
 #define SPI_BRG_500KHZ  19          // 20 MHz / (2 * (19 + 1)) = 500 kHz
@@ -55,6 +58,7 @@ static void SendByte(uint8_t b);
 static void EndFrame(void);
 static void DrainRx(void);
 static void ShortDelay(void);
+static void SendText(const char *Text);
 
 /*------------------------------ Module Code ------------------------------*/
 /****************************************************************************
@@ -123,8 +127,6 @@ void DisplayClear(void)
 ****************************************************************************/
 void DisplayLine(uint8_t Line, DisplayColor_t Color, const char *Text)
 {
-  uint8_t n = 0;
-
   if (Line >= DISPLAY_NUM_LINES)
   {
     return;
@@ -135,15 +137,64 @@ void DisplayLine(uint8_t Line, DisplayColor_t Color, const char *Text)
   SendByte(CMD_LINE);
   SendByte((uint8_t)('0' + Line));
   SendByte((uint8_t)Color);
-  while ((*Text != '\0') && (n < MAX_TEXT))
+  SendText(Text);
+  SendByte(MSG_END);
+  EndFrame();
+}
+
+/****************************************************************************
+ Function
+     DisplayTextAt
+
+ Description
+     Writes Text left-aligned starting at pixel column XStart of line Line,
+     clearing and using only columns XStart..XEnd-1, so anything else on
+     that line (an icon, for example) is left alone.
+     Example: DisplayTextAt(1, DISP_RED, 2, 48, "HELL'S");
+****************************************************************************/
+void DisplayTextAt(uint8_t Line, DisplayColor_t Color, uint8_t XStart,
+                   uint8_t XEnd, const char *Text)
+{
+  if ((Line >= DISPLAY_NUM_LINES) || (XEnd > DISPLAY_WIDTH_PX) ||
+      (XStart >= XEnd))
   {
-    uint8_t c = (uint8_t)*Text++;
-    if ((c != MSG_STX) && (c != MSG_END))   // never send framing bytes
-    {
-      SendByte(c);
-      n++;
-    }
+    return;
   }
+
+  BeginFrame();
+  SendByte(MSG_STX);
+  SendByte(CMD_TEXT_AT);
+  SendByte((uint8_t)(NUM_OFFSET + Line));
+  SendByte((uint8_t)Color);
+  SendByte((uint8_t)(NUM_OFFSET + XStart));
+  SendByte((uint8_t)(NUM_OFFSET + XEnd));
+  SendText(Text);
+  SendByte(MSG_END);
+  EndFrame();
+}
+
+/****************************************************************************
+ Function
+     DisplayIcon
+
+ Description
+     Draws a built-in icon with its top-left corner at pixel (X, Y).
+     Only the icon's colored pixels are drawn; the rest is left as is.
+     Example: DisplayIcon(DISP_ICON_FIRE, 50, 8);   // right of lines 1-2
+****************************************************************************/
+void DisplayIcon(DisplayIcon_t Icon, uint8_t X, uint8_t Y)
+{
+  if ((X >= DISPLAY_WIDTH_PX) || (Y >= DISPLAY_HEIGHT_PX))
+  {
+    return;
+  }
+
+  BeginFrame();
+  SendByte(MSG_STX);
+  SendByte(CMD_ICON);
+  SendByte((uint8_t)Icon);
+  SendByte((uint8_t)(NUM_OFFSET + X));
+  SendByte((uint8_t)(NUM_OFFSET + Y));
   SendByte(MSG_END);
   EndFrame();
 }
@@ -171,6 +222,21 @@ void DisplayLinef(uint8_t Line, DisplayColor_t Color, const char *Format, ...)
 /***************************************************************************
  private functions
  ***************************************************************************/
+// text bytes, at most MAX_TEXT, never the framing bytes
+static void SendText(const char *Text)
+{
+  uint8_t n = 0;
+  while ((*Text != '\0') && (n < MAX_TEXT))
+  {
+    uint8_t c = (uint8_t)*Text++;
+    if ((c != MSG_STX) && (c != MSG_END))
+    {
+      SendByte(c);
+      n++;
+    }
+  }
+}
+
 static void BeginFrame(void)
 {
   CS_LAT = CS_ACTIVE;

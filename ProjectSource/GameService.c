@@ -91,6 +91,7 @@
 
 // SPI link to the display PIC32
 #include "DisplayLink.h"
+#include <stdio.h>                 // snprintf for the line-0 corner texts
 
 /*----------------------------- Module Defines ----------------------------*/
 #define POINTS_PER_TASK  10        // added to userScore per completed task
@@ -99,6 +100,9 @@
 #define TASK_IDLE        0         // ES_START_TASK(0) = stop, LEDs off
 #define TASK_MASK        0x00FF    // low byte of ES_START_TASK param = task
 #define DISPLAY_REPAINT_TIME 1000  // ms: welcome screen repaint period
+#define STATUS_SPLIT_X   37        // line 0: score uses columns 0..36
+#define TIME_X           38        // line 0: "TIME:##" (26 px) in 38..63
+// welcome screen layout (pixels; display is 64 x 32, lines are 8 px tall)
 #define TASK_SWITCH      3         // Task 3 (rocker switches) gets extra time
 #define TASK3_TIME_NUM   3         // Task 3 time = 3/2 x taskTimer (1.5x,
 #define TASK3_TIME_DEN   2         //   15 s): stays below inactiveTimer
@@ -112,7 +116,7 @@ static void EndGame(void);
 static void ResetToWelcome(void);
 static void DrawWelcomeScreen(void);
 static void DrawWelcomeLines(void);
-static void DrawStatusLine(void);
+static void DrawStatusLine(bool Full);
 static void PostToTestHarness(ES_EventType_t Type, uint16_t Param);
 
 /*---------------------------- Module Variables ---------------------------*/
@@ -124,6 +128,8 @@ static GameState_t gameState;
 // Game length in seconds: change this to make the game longer/shorter
 static uint16_t gameTimer = 60;
 static uint16_t secondsLeft;       // countdown, ticks once per second
+static uint16_t taskSecondsLeft;   // current task's time left (display)
+static uint8_t  currentTaskNum;    // task now running (display layout)
 
 // Time allowed per task, in seconds. Task 3 gets TASK3_TIME_NUM /
 // TASK3_TIME_DEN times this (15 s). Keep every task time below
@@ -213,7 +219,11 @@ ES_Event_t RunGameService(ES_Event_t ThisEvent)
       {
         secondsLeft--;
       }
-      DrawStatusLine();             // display line 3: score + time left
+      if (taskSecondsLeft > 0)
+      {
+        taskSecondsLeft--;
+      }
+      DrawStatusLine(false);        // time-left line(s) only
       if (0 == secondsLeft)
       {
         ES_Event_t Expired;
@@ -414,7 +424,9 @@ static void StartTask(uint8_t Task)
 
   DB_printf("Score: %d\r\n", userScore);
   DB_printf("You have %d seconds for this task\r\n", thisTaskTime);
-  DrawStatusLine();                // display line 3: score + time left
+  currentTaskNum  = Task;
+  taskSecondsLeft = thisTaskTime;
+  DrawStatusLine(true);            // score + time-left lines
 
   attempt++;
   currentStartParam = ((uint16_t)attempt << 8) | Task;
@@ -505,10 +517,10 @@ static void DrawWelcomeScreen(void)
 // used for the once-a-second repaint so the screen doesn't blink
 static void DrawWelcomeLines(void)
 {
-  DisplayLine(0, DISP_ORANGE, "HELL'S");
-  DisplayLine(1, DISP_RED,    "KITCHEN");
-  DisplayLine(2, DISP_WHITE,  "PRESS");
-  DisplayLine(3, DISP_GREEN,  "START");
+  DisplayLine(0, DISP_WHITE, "WELCOME TO");
+  DisplayLine(1, DISP_RED,   "HELL'S");
+  DisplayLine(2, DISP_RED,   "KITCHEN");
+  DisplayLine(3, DISP_GREEN, "PRESS TO START");
 }
 
 /****************************************************************************
@@ -516,12 +528,33 @@ static void DrawWelcomeLines(void)
      DrawStatusLine
 
  Description
-     Bottom display line while playing: score and game seconds left,
-     e.g. "40PT 52S"
+     Status lines while playing, the same for all three tasks:
+       line 0: "SCORE:40" in the left corner, "TIME:52" (game seconds
+               left) in the right corner
+       line 3: "YOU HAVE 8 SEC!" (this task's seconds left)
+     Lines 1-2 (task number and instruction) are drawn by TaskService.
+     Full = false is the once-a-second update: the score is left alone.
+     taskSecondsLeft counts down on the 1 s game clock, so it can be up
+     to 1 s off from the real task timer.
 ****************************************************************************/
-static void DrawStatusLine(void)
+static void DrawStatusLine(bool Full)
 {
-  DisplayLinef(3, DISP_YELLOW, "%dPT %dS", userScore, secondsLeft);
+  char text[12];
+
+  // line 0, left corner: score (only changes between tasks)
+  if (Full)
+  {
+    snprintf(text, sizeof(text), "SCORE:%d", userScore);
+    DisplayTextAt(0, DISP_YELLOW, 0, STATUS_SPLIT_X, text);
+  }
+  // line 0, right corner: game time left. Starts at a fixed column;
+  // "%2d" pads 0-9 with a leading space so the text still ends at the
+  // right edge (within about 1 pixel)
+  snprintf(text, sizeof(text), "TIME:%2d", secondsLeft);
+  DisplayTextAt(0, DISP_YELLOW, TIME_X, DISPLAY_WIDTH_PX, text);
+
+  // line 3: this task's time left
+  DisplayLinef(3, DISP_RED, "YOU HAVE %d SEC!", taskSecondsLeft);
 }
 
 /****************************************************************************

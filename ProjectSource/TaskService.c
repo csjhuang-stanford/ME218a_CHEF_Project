@@ -322,7 +322,8 @@ ES_Event_t RunTaskService(ES_Event_t ThisEvent)
       if (TASK1_WAITING == Task1State)
       {
         uint16_t currentPot = (uint16_t)ThisEvent.EventParam;
-        ShowPotLevel(currentPot);   // display line 2, only if level changed
+        // ShowPotLevel(currentPot);   // (removed: user doesn't see the
+        //                            //  current value; line 2 = score)
 
         if (PotInRange(currentPot))
         {
@@ -341,7 +342,8 @@ ES_Event_t RunTaskService(ES_Event_t ThisEvent)
       {
         currentSwipes++;
         DB_printf("currentSwipes = %d\r\n", currentSwipes);
-        DisplayLinef(2, DISP_WHITE, "DONE %d/%d", currentSwipes, targetSwipes);
+        // DisplayLinef(2, DISP_WHITE, "DONE %d/%d", currentSwipes, targetSwipes);
+        //   (current value not shown: line 2 keeps the instruction)
 
         if (currentSwipes >= targetSwipes)
         {
@@ -359,7 +361,7 @@ ES_Event_t RunTaskService(ES_Event_t ThisEvent)
       {
         uint8_t currentBinary = (uint8_t)ThisEvent.EventParam;
         PrintBinary(currentBinary);
-        ShowBinary(currentBinary);  // display line 2
+        // ShowBinary(currentBinary);  // (current value not shown)
 
         if (currentBinary == targetDecimal)
         {
@@ -516,10 +518,11 @@ static void StartTask1(void)
   DB_printf("targetPot = %d of %d (%d +/- %d)\r\n",
       targetPot, POT_LEVELS, targetPotRaw, TASK1_TOLERANCE);
   DB_printf("currentPot = %d\r\n", QueryCurrentPot());
-  DisplayLine(0, DISP_CYAN, "TASK 1");
-  DisplayLinef(1, DISP_WHITE, "POT TO %d", targetPot);  // level 0..10
-  lastShownPotLevel = 0xFF;                             // force a redraw
-  ShowPotLevel(QueryCurrentPot());
+  // display: line 1 = task, line 2 = instruction (lines 0 and 3: GameService)
+  DisplayLine(1, DISP_GREEN, "TASK 1");
+  DisplayLinef(2, DISP_GREEN, "SET STOVE TO: %d", targetPot);  // level 0..10
+  // lastShownPotLevel = 0xFF;                          // (current value
+  // ShowPotLevel(QueryCurrentPot());                   //  no longer shown)
   ES_Timer_InitTimer(TASK1_PRINT_TIMER, TASK1_PRINT_TIME);
 }
 
@@ -558,9 +561,10 @@ static void StartTask2(void)
 
   DB_printf("targetSwipes = %d\r\n", targetSwipes);
   DB_printf("currentSwipes = %d\r\n", currentSwipes);
-  DisplayLine(0, DISP_MAGENTA, "TASK 2");
-  DisplayLinef(1, DISP_WHITE, "SWIPE %d", targetSwipes);
-  DisplayLinef(2, DISP_WHITE, "DONE %d/%d", currentSwipes, targetSwipes);
+  // display: line 1 = task, line 2 = instruction (lines 0 and 3: GameService)
+  DisplayLine(1, DISP_GREEN, "TASK 2");
+  DisplayLinef(2, DISP_GREEN, "CHOP: %d TIMES", targetSwipes);
+  // DisplayLinef(2, DISP_WHITE, "DONE %d/%d", currentSwipes, targetSwipes);
 }
 
 /****************************************************************************
@@ -584,9 +588,10 @@ static void StartTask3(void)
 
   DB_printf("targetDecimal = %d\r\n", targetDecimal);
   PrintBinary(QueryRockerSwitch());
-  DisplayLine(0, DISP_GREEN, "TASK 3");
-  DisplayLinef(1, DISP_WHITE, "MAKE %d", targetDecimal);
-  ShowBinary(QueryRockerSwitch());
+  // display: line 1 = task, line 2 = instruction (lines 0 and 3: GameService)
+  DisplayLine(1, DISP_GREEN, "TASK 3");
+  DisplayLinef(2, DISP_GREEN, "SET MICROWAVE: %d", targetDecimal);
+  // ShowBinary(QueryRockerSwitch());   // (current value not shown)
 }
 
 /****************************************************************************
