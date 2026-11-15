@@ -465,10 +465,10 @@ static void EndGame(void)
 
   // Game Completion Page on the display
   DisplayClear();
-  DisplayLine(0, DISP_RED, "TIME UP!");
-  DisplayLinef(1, DISP_YELLOW, "SCORE %d", userScore);
-  DisplayLinef(2, DISP_CYAN, "TASKS %d", tasksCompleted);
-  DisplayLine(3, DISP_WHITE, "PRESS START");
+  DisplayLine(0, DISP_RED, "TIME'S UP!");
+  DisplayLinef(1, DISP_YELLOW, "SCORE: %d", userScore);
+  DisplayLinef(2, DISP_GREEN, "SERVING BURGER...");
+  DisplayLine(3, DISP_WHITE, "PRESS TO RESTART");
 
   PostToTestHarness(ES_GAME_OVER, 0);   // long beep
 }

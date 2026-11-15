@@ -143,8 +143,8 @@ static bool PotInRange(uint16_t Pot);
 static void StartTask2(void);
 static void StartTask3(void);
 static void PrintBinary(uint8_t Value);
-static void ShowPotLevel(uint16_t Pot);
-static void ShowBinary(uint8_t Value);
+// static void ShowPotLevel(uint16_t Pot);
+// static void ShowBinary(uint8_t Value);
 
 /*---------------------------- Module Variables ---------------------------*/
 // with the introduction of Gen2, we need a module level Priority variable
@@ -158,7 +158,7 @@ static uint16_t currentStartParam;   // ES_START_TASK param, echoed back
 static Task1State_t Task1State;
 static uint8_t  targetPot;         // level 0..10
 static uint16_t targetPotRaw;      // same target on the ADC scale 0..1023
-static uint8_t  lastShownPotLevel; // level last sent to the display
+// static uint8_t  lastShownPotLevel; // level last sent to the display
 
 // Pre-generated "random" Task 1 targets (levels), one per Task 1.
 //   - every value is 0..10, mapped to the ADC as level * 1023 / 10:
@@ -342,8 +342,8 @@ ES_Event_t RunTaskService(ES_Event_t ThisEvent)
       {
         currentSwipes++;
         DB_printf("currentSwipes = %d\r\n", currentSwipes);
-        // DisplayLinef(2, DISP_WHITE, "DONE %d/%d", currentSwipes, targetSwipes);
-        //   (current value not shown: line 2 keeps the instruction)
+        // display line 2: instruction + progress, updated on every swipe
+        DisplayLinef(2, DISP_GREEN, "CHOP FOR: %d/%d", currentSwipes, targetSwipes);
 
         if (currentSwipes >= targetSwipes)
         {
@@ -561,10 +561,10 @@ static void StartTask2(void)
 
   DB_printf("targetSwipes = %d\r\n", targetSwipes);
   DB_printf("currentSwipes = %d\r\n", currentSwipes);
-  // display: line 1 = task, line 2 = instruction (lines 0 and 3: GameService)
+  // display: line 1 = task, line 2 = instruction + progress
+  // (lines 0 and 3: GameService)
   DisplayLine(1, DISP_GREEN, "TASK 2");
-  DisplayLinef(2, DISP_GREEN, "CHOP: %d TIMES", targetSwipes);
-  // DisplayLinef(2, DISP_WHITE, "DONE %d/%d", currentSwipes, targetSwipes);
+  DisplayLinef(2, DISP_GREEN, "CHOP FOR: %d/%d", currentSwipes, targetSwipes);
 }
 
 /****************************************************************************
@@ -590,7 +590,7 @@ static void StartTask3(void)
   PrintBinary(QueryRockerSwitch());
   // display: line 1 = task, line 2 = instruction (lines 0 and 3: GameService)
   DisplayLine(1, DISP_GREEN, "TASK 3");
-  DisplayLinef(2, DISP_GREEN, "SET MICROWAVE: %d", targetDecimal);
+  DisplayLinef(2, DISP_GREEN, "SET BINARY: %d", targetDecimal);
   // ShowBinary(QueryRockerSwitch());   // (current value not shown)
 }
 
@@ -617,16 +617,16 @@ static void PrintBinary(uint8_t Value)
      targetPot). Only sends when the level changes, so pot movements don't
      flood the SPI link.
 ****************************************************************************/
-static void ShowPotLevel(uint16_t Pot)
-{
-  uint8_t level = (uint8_t)(((uint32_t)Pot * POT_LEVELS + (POT_FULL_SCALE / 2))
-                            / POT_FULL_SCALE);
-  if (level != lastShownPotLevel)
-  {
-    lastShownPotLevel = level;
-    DisplayLinef(2, DISP_WHITE, "NOW %d", level);
-  }
-}
+// static void ShowPotLevel(uint16_t Pot)
+// {
+//   uint8_t level = (uint8_t)(((uint32_t)Pot * POT_LEVELS + (POT_FULL_SCALE / 2))
+//                             / POT_FULL_SCALE);
+//   if (level != lastShownPotLevel)
+//   {
+//     lastShownPotLevel = level;
+//     DisplayLinef(2, DISP_WHITE, "NOW %d", level);
+//   }
+// }
 
 /****************************************************************************
  Function
@@ -635,11 +635,11 @@ static void ShowPotLevel(uint16_t Pot)
  Description
      Display line 2 for Task 3: switches as 4 binary digits, e.g. "NOW 0110"
 ****************************************************************************/
-static void ShowBinary(uint8_t Value)
-{
-  DisplayLinef(2, DISP_WHITE, "NOW %d%d%d%d",
-      (Value >> 3) & 1, (Value >> 2) & 1, (Value >> 1) & 1, Value & 1);
-}
+// static void ShowBinary(uint8_t Value)
+// {
+//   DisplayLinef(2, DISP_WHITE, "NOW %d%d%d%d",
+//       (Value >> 3) & 1, (Value >> 2) & 1, (Value >> 1) & 1, Value & 1);
+// }
 
 /****************************************************************************
  Function

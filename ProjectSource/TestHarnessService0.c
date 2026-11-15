@@ -59,7 +59,7 @@
 // announcements), 0 = hide them so only the game prints show
 #define SHOW_DEBUG_PRINTS 0
 
-#define BUZZER_ON     true     // true = real beep, false = print "BEEP!" only
+#define BUZZER_ON     false     // true = real beep, false = print "BEEP!" only
 
 // Servo pulse widths in PWM ticks (2.5 MHz: 2500 = 1 ms)
 
@@ -142,7 +142,8 @@ static uint16_t      Servo2HoldCount;
 static void StartServo2Dispense(void)
 {
   DB_printf("Dispensing Burger!\r\n");
-  DisplayLine(3, DISP_ORANGE, "BURGER!");
+  // display: GameService's completion page already shows
+  // "SERVING BURGER..." on line 2 while the servo moves
   Servo2Pulse = SERVO_MIN_PULSE;
   Servo2State = SERVO2_SWEEPING_UP;
 }
@@ -273,9 +274,10 @@ static void moveServo(void)
         Servo2Pulse = SERVO_MIN_PULSE;
         Servo2State = SERVO2_RESTING;
         DB_printf("Burger Dispensed!\r\n");
+        // opening + hold + closing done: only line 2 changes
         if (GAME_COMPLETE == QueryGameState())   // still on that page
         {
-          DisplayLine(3, DISP_WHITE, "PRESS START");
+          DisplayLine(2, DISP_GREEN, "BON APPETIT!");
         }
       }
       else
