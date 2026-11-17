@@ -13,9 +13,10 @@
      Beam intact  -> OUT high (1)
      Beam broken  -> OUT low  (0)
    Check4BeamBreak() samples RB5 every SAMPLE_TIME ms (not every pass of
-   the framework loop) and posts ES_BEAM_BROKEN to TaskService on each
-   intact -> broken (H->L) transition. Sampling at 10 ms also acts as a
-   simple debounce.
+   the framework loop) and posts ES_BEAM_BROKEN to TaskService once per
+   swipe: when the beam has been broken for BROKEN_SAMPLES samples, and
+   only if it was intact for REARM_TIME ms since the last swipe, so the
+   flicker while a hand passes through counts once.
 
  Notes
    RB5 has no analog function, so no ANSELB setting is needed.
@@ -25,6 +26,7 @@
  When           Who     What/Why
  -------------- ---     --------
  11/12/26       CH      internal pull-up on: receiver is open collector
+ 11/15/26       CH      debounce: 20 ms broken to count, 150 ms intact to re-arm
  11/10/26       CH      started coding
 ****************************************************************************/
 /*----------------------------- Include Files -----------------------------*/
@@ -42,9 +44,21 @@
 #define BEAM_BROKEN    0
 #define SAMPLE_TIME    10        // ms between samples of the beam
 
+// Debounce: a hand doesn't break the beam cleanly (edges and gaps between
+// fingers make it flicker), so one pass used to count as several swipes.
+//   - a swipe counts after the beam reads broken BROKEN_SAMPLES times in a
+//     row (rejects single-sample glitches)
+//   - the next swipe can only count after the beam has read intact for
+//     REARM_TIME ms in a row (ignores the flicker while the hand passes)
+#define BROKEN_SAMPLES 2         // 2 x 10 ms = 20 ms solidly broken
+#define REARM_TIME     150       // ms solidly intact before the next swipe
+#define REARM_SAMPLES  (REARM_TIME / SAMPLE_TIME)
+
 /*---------------------------- Module Variables ---------------------------*/
-static uint8_t  LastBeamState;
 static uint16_t LastSampleTime;
+static bool     Armed;           // true = ready to count the next swipe
+static uint8_t  BrokenCount;     // consecutive broken samples
+static uint8_t  IntactCount;     // consecutive intact samples
 
 /*------------------------------ Module Code ------------------------------*/
 /****************************************************************************
@@ -63,7 +77,11 @@ void InitBeamBreak(void)
   CNPUBbits.CNPUB5 = 1;      // internal pull-up on (open-collector receiver)
   CNPDBbits.CNPDB5 = 0;      // internal pull-down off
 
-  LastBeamState  = BEAM_PIN;
+  // start armed only if the beam is intact (a hand already in the beam at
+  // power-up must leave first)
+  Armed          = (BEAM_INTACT == BEAM_PIN);
+  BrokenCount    = 0;
+  IntactCount    = 0;
   LastSampleTime = ES_Timer_GetTime();
 }
 
@@ -88,17 +106,33 @@ bool Check4BeamBreak(void)
     uint8_t CurrentBeamState = BEAM_PIN;
     LastSampleTime = Now;
 
-    // only the intact -> broken transition counts as one swipe
-    if ((CurrentBeamState != LastBeamState) &&
-        (BEAM_BROKEN == CurrentBeamState))
+    if (BEAM_BROKEN == CurrentBeamState)
     {
-      ES_Event_t ThisEvent;
-      ThisEvent.EventType  = ES_BEAM_BROKEN;
-      ThisEvent.EventParam = 0;
-      PostTaskService(ThisEvent);
-      ReturnVal = true;
+      IntactCount = 0;
+      if (BrokenCount < 255) { BrokenCount++; }
+
+      // armed and solidly broken: this is one swipe
+      if (Armed && (BrokenCount >= BROKEN_SAMPLES))
+      {
+        ES_Event_t ThisEvent;
+        ThisEvent.EventType  = ES_BEAM_BROKEN;
+        ThisEvent.EventParam = 0;
+        PostTaskService(ThisEvent);
+        ReturnVal = true;
+        Armed = false;               // wait for the hand to leave
+      }
     }
-    LastBeamState = CurrentBeamState;
+    else                             // intact
+    {
+      BrokenCount = 0;
+      if (IntactCount < 255) { IntactCount++; }
+
+      // hand has been gone long enough: ready for the next swipe
+      if (IntactCount >= REARM_SAMPLES)
+      {
+        Armed = true;
+      }
+    }
   }
 
   return ReturnVal;
