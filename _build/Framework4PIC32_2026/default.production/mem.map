@@ -1,105 +1,105 @@
 Archive member included to satisfy reference by file (symbol)
 
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libdinit.a(pic32_data_init_core.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o (__pic32_data_init)
+                              C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o (__pic32_data_init)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-bootstrap-exception-handler.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o (_bootstrap_exception_handler)
+                              C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o (_bootstrap_exception_handler)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-on-reset.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o (_on_reset)
+                              C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o (_on_reset)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-on-bootstrap.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o (_on_bootstrap)
+                              C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o (_on_bootstrap)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-nmi-handler.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o (_nmi_handler)
+                              C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o (_nmi_handler)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(xc32_uart.o)
                               CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/FrameworkSource/terminal.c.o (__XC_UART)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(general-exception.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o (_general_exception_context)
+                              C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o (_general_exception_context)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector1.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_1)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_1)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector2.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_2)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_2)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector3.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_3)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_3)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector4.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_4)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_4)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector5.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_5)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_5)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector6.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_6)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_6)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector7.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_7)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_7)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector8.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_8)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_8)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector9.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_9)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_9)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector10.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_10)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_10)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector11.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_11)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_11)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector12.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_12)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_12)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector13.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_13)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_13)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector14.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_14)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_14)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector15.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_15)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_15)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector16.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_16)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_16)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector17.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_17)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_17)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector18.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_18)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_18)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector19.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_19)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_19)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector20.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_20)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_20)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector21.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_21)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_21)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector22.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_22)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_22)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector23.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_23)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_23)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector24.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_24)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_24)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector25.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_25)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_25)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector26.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_26)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_26)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector27.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_27)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_27)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector28.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_28)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_28)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector29.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_29)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_29)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector30.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_30)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_30)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector31.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_31)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_31)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector32.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_32)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_32)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector33.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_33)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_33)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector34.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_34)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_34)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector35.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_35)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_35)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector36.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_36)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_36)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector37.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_37)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_37)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector38.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_38)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_38)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector39.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_39)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_39)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector40.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_40)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_40)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector41.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_41)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_41)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector42.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_42)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_42)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(vector43.o)
-                              C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o (__vector_dispatch_43)
+                              C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o (__vector_dispatch_43)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-general-exception-handler.o)
                               c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(general-exception.o) (_general_exception_handler)
 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(defaultinterrupt.o)
@@ -505,7 +505,7 @@ Microchip PIC32 Memory-Usage Report By Module
          664           0           1         665         299    PIC32_AD_Lib.c.o                        CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/PIC32_AD_Lib.c.o
          516           0           0         516         204    __fmt_x.o                               libc-musl.a
          496           0           5         501         1f5    BeamBreak.c.o                           CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/BeamBreak.c.o
-         448           0           0         448         1c0    ccQyK4MO.o                              C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+         448           0           0         448         1c0    cc0kyesj.o                              C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
          392           0           0         392         188    __pop_int.o                             libc-musl.a
          376           0           0         376         178    __stdio_close.o                         libc-musl.a
          364           0           4         368         170    StartButton.c.o                         CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/StartButton.c.o
@@ -719,19 +719,19 @@ Discarded input sections
  .MIPS.abiflags
                 0x00000000       0x18 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/main.c.o
  .pdr           0x00000000       0x20 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/main.c.o
- .reginfo       0x00000000       0x18 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+ .reginfo       0x00000000       0x18 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
  .MIPS.abiflags
-                0x00000000       0x18 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
- .pdr           0x00000000       0xa0 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
- .reginfo       0x00000000       0x18 C:\Users\cindy\AppData\Local\Temp\ccdiBmIG.o
+                0x00000000       0x18 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
+ .pdr           0x00000000       0xa0 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
+ .reginfo       0x00000000       0x18 C:\Users\cindy\AppData\Local\Temp\ccGE3o2U.o
  .MIPS.abiflags
-                0x00000000       0x18 C:\Users\cindy\AppData\Local\Temp\ccdiBmIG.o
- .pdr           0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\ccdiBmIG.o
- .reginfo       0x00000000       0x18 C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o
+                0x00000000       0x18 C:\Users\cindy\AppData\Local\Temp\ccGE3o2U.o
+ .pdr           0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\ccGE3o2U.o
+ .reginfo       0x00000000       0x18 C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o
  .MIPS.abiflags
-                0x00000000       0x18 C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o
- .pdr           0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o
- .discard       0x00000000       0xb0 C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o
+                0x00000000       0x18 C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o
+ .pdr           0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o
+ .discard       0x00000000       0xb0 C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o
  .reginfo       0x00000000       0x18 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\debug-exception-return.o
  .MIPS.abiflags
                 0x00000000       0x18 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\debug-exception-return.o
@@ -1756,9 +1756,9 @@ LOAD CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/C
 LOAD CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/TaskService.c.o
 LOAD CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/TestHarnessService0.c.o
 LOAD CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/main.c.o
-LOAD C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
-LOAD C:\Users\cindy\AppData\Local\Temp\ccdiBmIG.o
-LOAD C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o
+LOAD C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
+LOAD C:\Users\cindy\AppData\Local\Temp\ccGE3o2U.o
+LOAD C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o
 LOAD c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\debug-exception-return.o
 LOAD c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\pic32_software_reset.o
 LOAD c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1\libgcc.a
@@ -1821,16 +1821,16 @@ END GROUP
 
 .reset          0xbfc00000      0x14c
  *(.reset)
- .reset         0xbfc00000        0x8 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+ .reset         0xbfc00000        0x8 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
                 0xbfc00000                _reset
  *(.reset.startup)
  .reset.startup
-                0xbfc00008      0x144 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+                0xbfc00008      0x144 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
                 0xbfc00008                _startup
 
 .bev_excpt      0xbfc00380       0x10
  *(.bev_handler)
- .bev_handler   0xbfc00380       0x10 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+ .bev_handler   0xbfc00380       0x10 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
 
 .dbg_excpt      0xbfc00480        0x0
                 0xbfc00480                        . = (. + DEFINED (_DEBUGGER)?0x8:0x0)
@@ -1840,7 +1840,7 @@ END GROUP
 
 .app_excpt      0x9d03f180       0x10
  *(.gen_handler)
- .gen_handler   0x9d03f180       0x10 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+ .gen_handler   0x9d03f180       0x10 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
 
 .vector_0       0x9d03f200        0x8
  *(.vector_0)
@@ -2654,7 +2654,7 @@ END GROUP
  .debug_aranges
                 0x000002f8       0x20 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/main.c.o
  .debug_aranges
-                0x00000318       0x40 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+                0x00000318       0x40 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
  .debug_aranges
                 0x00000358       0x20 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-bootstrap-exception-handler.o)
  .debug_aranges
@@ -2802,7 +2802,7 @@ END GROUP
  .debug_info    0x00008e2a      0xae6 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/TaskService.c.o
  .debug_info    0x00009910      0x5ad CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/TestHarnessService0.c.o
  .debug_info    0x00009ebd      0x6c4 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/main.c.o
- .debug_info    0x0000a581       0x69 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+ .debug_info    0x0000a581       0x69 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
  .debug_info    0x0000a5ea       0x72 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-bootstrap-exception-handler.o)
  .debug_info    0x0000a65c       0x40 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-on-reset.o)
  .debug_info    0x0000a69c       0x40 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-on-bootstrap.o)
@@ -2889,7 +2889,7 @@ END GROUP
  .debug_abbrev  0x000021b0      0x2df CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/TaskService.c.o
  .debug_abbrev  0x0000248f      0x1a0 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/TestHarnessService0.c.o
  .debug_abbrev  0x0000262f      0x1bd CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/main.c.o
- .debug_abbrev  0x000027ec       0x1f C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+ .debug_abbrev  0x000027ec       0x1f C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
  .debug_abbrev  0x0000280b       0x7d c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-bootstrap-exception-handler.o)
  .debug_abbrev  0x00002888       0x30 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-on-reset.o)
  .debug_abbrev  0x000028b8       0x30 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-on-bootstrap.o)
@@ -2976,7 +2976,7 @@ END GROUP
  .debug_line    0x00003198      0x4dd CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/TaskService.c.o
  .debug_line    0x00003675      0x358 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/TestHarnessService0.c.o
  .debug_line    0x000039cd      0x25a CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/main.c.o
- .debug_line    0x00003c27      0x127 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+ .debug_line    0x00003c27      0x127 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
  .debug_line    0x00003d4e       0xe2 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-bootstrap-exception-handler.o)
  .debug_line    0x00003e30       0xa5 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-on-reset.o)
  .debug_line    0x00003ed5       0xa9 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-on-bootstrap.o)
@@ -3147,7 +3147,7 @@ END GROUP
  .debug_str     0x00005751      0x9d1 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/TaskService.c.o
  .debug_str     0x00005751      0x7a1 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/TestHarnessService0.c.o
  .debug_str     0x00005751      0x6d9 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/main.c.o
- .debug_str     0x00005751       0xda C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+ .debug_str     0x00005751       0xda C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
  .debug_str     0x00005751      0x318 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-bootstrap-exception-handler.o)
  .debug_str     0x00005751      0x2b7 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-on-reset.o)
  .debug_str     0x00005751      0x2bf c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-on-bootstrap.o)
@@ -3307,7 +3307,7 @@ END GROUP
  *.elf(.debug_ranges)
  *(.debug_ranges)
  .debug_ranges  0x00000000       0x18 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/TaskService.c.o
- .debug_ranges  0x00000018       0x38 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+ .debug_ranges  0x00000018       0x38 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
  .debug_ranges  0x00000050       0x10 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-bootstrap-exception-handler.o)
  .debug_ranges  0x00000060       0x10 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-on-reset.o)
  .debug_ranges  0x00000070       0x10 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libpic32.a(default-on-bootstrap.o)
@@ -3417,11 +3417,11 @@ END GROUP
  .gnu.attributes
                 0x00000180       0x10 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/main.c.o
  .gnu.attributes
-                0x00000190       0x10 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+                0x00000190       0x10 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
  .gnu.attributes
-                0x000001a0       0x10 C:\Users\cindy\AppData\Local\Temp\ccdiBmIG.o
+                0x000001a0       0x10 C:\Users\cindy\AppData\Local\Temp\ccGE3o2U.o
  .gnu.attributes
-                0x000001b0       0x10 C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o
+                0x000001b0       0x10 C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o
  .gnu.attributes
                 0x000001c0       0x10 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\debug-exception-return.o
  .gnu.attributes
@@ -3694,9 +3694,9 @@ LOAD data_init
  .note          0x000002d0       0x18 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/TaskService.c.o
  .note          0x000002e8       0x18 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/TestHarnessService0.c.o
  .note          0x00000300       0x18 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/main.c.o
- .note          0x00000318       0x18 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
- .note          0x00000330       0x18 C:\Users\cindy\AppData\Local\Temp\ccdiBmIG.o
- .note          0x00000348       0x18 C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o
+ .note          0x00000318       0x18 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
+ .note          0x00000330       0x18 C:\Users\cindy\AppData\Local\Temp\ccGE3o2U.o
+ .note          0x00000348       0x18 C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o
  .note          0x00000360       0x48 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\debug-exception-return.o
  .note          0x000003a8       0x18 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\pic32_software_reset.o
  .note          0x000003c0       0x18 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\libdinit.a(pic32_data_init_core.o)
@@ -4276,7 +4276,7 @@ LOAD data_init
 .text.main_entry
                 0x9d00cd40       0x54
  .text.main_entry
-                0x9d00cd40       0x54 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+                0x9d00cd40       0x54 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
                 0x9d00cd74                __crt0_exit
 
 .text.fflush    0x9d00cd94       0x54
@@ -5595,31 +5595,31 @@ LOAD data_init
  .text          0x00000000        0x0 c:/Program Files/Microchip/xc32/v6.00/bin/bin/../../lib/gcc/pic32m/13.2.1/../../../../pic32m/lib\debug-exception-return.o
 
 .bss%z337       0x00000000        0x0
- .bss           0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o
+ .bss           0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o
 
 .data%z338      0x00000000        0x0
- .data          0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o
+ .data          0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o
 
 .text%z339      0x00000000        0x0
- .text          0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\ccQJMpbE.o
+ .text          0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\cc6HA4iD.o
 
 .bss%z340       0x00000000        0x0
- .bss           0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\ccdiBmIG.o
+ .bss           0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\ccGE3o2U.o
 
 .data%z341      0x00000000        0x0
- .data          0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\ccdiBmIG.o
+ .data          0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\ccGE3o2U.o
 
 .text%z342      0x00000000        0x0
- .text          0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\ccdiBmIG.o
+ .text          0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\ccGE3o2U.o
 
 .bss%z343       0x00000000        0x0
- .bss           0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+ .bss           0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
 
 .data%z344      0x00000000        0x0
- .data          0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+ .data          0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
 
 .text%z345      0x00000000        0x0
- .text          0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\ccQyK4MO.o
+ .text          0x00000000        0x0 C:\Users\cindy\AppData\Local\Temp\cc0kyesj.o
 
 .bss%z346       0x00000000        0x0
  .bss           0x00000000        0x0 CMakeFiles/Framework4PIC32_2026_default_default_XC32_compile.dir/C_/ME218/CHEF_Project/ProjectSource/main.c.o
