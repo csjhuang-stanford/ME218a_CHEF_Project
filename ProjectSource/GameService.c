@@ -52,8 +52,12 @@
                              -> GAME_COMPLETE
 
    GAME_COMPLETE ("Displaying Game Completion Page")
-     ES_START_PRESSED      : ES_CLOSE_DISPENSER (both servos -> 0)
-                             -> GAME_WELCOME
+     entry                 : start inactiveTimer
+     ES_START_PRESSED      : stop inactiveTimer, ES_CLOSE_DISPENSER
+                             (both servos -> 0) -> GAME_WELCOME
+     ES_TIMEOUT(INACTIVE_TIMER) ("inactiveTimer expired")
+                           : print "Inactive for # seconds!",
+                             ES_CLOSE_DISPENSER -> GAME_WELCOME
 
    Inactivity timer: INACTIVE_TIMER is a single inactiveTimer-second timer,
    started with the game and restarted by every ES_USER_INPUT (pot, beam
@@ -341,6 +345,10 @@ ES_Event_t RunGameService(ES_Event_t ThisEvent)
       {
         DB_printf("Burger served! Press START to restart\r\n");
         DisplayLine(2, DISP_GREEN, "BON APETITE!");   // only line 2 changes
+        // entry to GAME_COMPLETE: nobody presses START for inactiveTimer
+        // seconds -> back to the welcome page on its own
+        ES_Timer_InitTimer(INACTIVE_TIMER,
+                           (uint16_t)(inactiveTimer * ONE_SECOND));
         gameState = GAME_COMPLETE;
       }
     }
@@ -351,6 +359,17 @@ ES_Event_t RunGameService(ES_Event_t ThisEvent)
     {
       if (ES_START_PRESSED == ThisEvent.EventType)
       {
+        ES_Timer_StopTimer(INACTIVE_TIMER);
+        PostToTestHarness(ES_CLOSE_DISPENSER, 0);   // both servos -> 0
+        gameState = GAME_WELCOME;
+        PrintWelcome();               // entry action of GAME_WELCOME
+      }
+      else if ((ES_TIMEOUT == ThisEvent.EventType) &&
+               (INACTIVE_TIMER == ThisEvent.EventParam))
+      {
+        // event: inactiveTimer expired on the completion page -> same as
+        // pressing START: close the dispenser, back to the welcome page
+        DB_printf("\r\nInactive for %d seconds!\r\n", inactiveTimer);
         PostToTestHarness(ES_CLOSE_DISPENSER, 0);   // both servos -> 0
         gameState = GAME_WELCOME;
         PrintWelcome();               // entry action of GAME_WELCOME
