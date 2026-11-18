@@ -21,12 +21,13 @@
      task 1 -> LED 1 on RB8  (pin 17)
      task 2 -> LED 2 on RB9  (pin 18)
      task 3 -> LED 3 on RB10 (pin 21)
-   Only the current task's LED is on (solid); the others are off.
+   Only the current task's LED blinks (LED_BLINK_TIME on / off, fully on
+   when lit); the others are off.
 
    Task 1 (potentiometer):
      State TASK1_WAITING: "Waiting for currentPot within +/- 10% of
        targetPot"
-       entry            : targetPot = next entry of targetPotOrder (0..10,
+       entry            : targetPot = next entry of targetPotOrder (1..10,
                           mapped to 0..1023), print targetPot and
                           currentPot, start print timer (if the pot is
                           already in range, go straight to DWELLING)
@@ -51,7 +52,9 @@
    Task 3 (rocker switches):
      State: "Waiting for currentBinary == targetDecimal"
        entry            : targetDecimal = next entry of targetDecimalOrder,
-                          print targetDecimal and currentBinary
+                          skipping any entry equal to the switches'
+                          current setting; print targetDecimal and
+                          currentBinary
        ES_SWITCH_CHANGED: print currentBinary
        currentBinary == targetDecimal                  : task complete
 
@@ -109,14 +112,20 @@
 
 #define LED_ON           1
 #define LED_OFF          0
+#define LED_BLINK_TIME   250       // ms on, then ms off (2 blinks per second)
 
 // Task 1
 #define NUM_TASK1_TARGETS    30    // length of targetPotOrder
-#define POT_LEVELS           10    // targetPot levels 0..10
+#define POT_MIN_LEVEL        1     // targetPot levels 1..10 over the full
+#define POT_MAX_LEVEL        10    //   pot travel (1 = one end, 10 = other)
 #define POT_FULL_SCALE       1023  // 10-bit ADC
+// level 1..10 -> ADC 0..1023, evenly spaced (about 114 counts per level);
+// 32-bit math so 9 * 1023 can't overflow
+#define POT_LEVEL_TO_RAW(L)  ((uint16_t)(((uint32_t)((L) - POT_MIN_LEVEL) * \
+                              POT_FULL_SCALE) / (POT_MAX_LEVEL - POT_MIN_LEVEL)))
 #define TASK1_TOLERANCE      102   // 10% of full scale (1023)
 #define TASK1_PRINT_TIME     500   // ms between "currentPot = #" prints
-#define TASK1_DWELL_TIME     500  // ms the pot must stay in range
+#define TASK1_DWELL_TIME     1000  // ms the pot must stay in range
 
 // Task 2
 #define NUM_TASK2_TARGETS    30    // length of targetSwipesOrder
@@ -149,6 +158,7 @@ static void StopAllTasks(void);
 static void CompleteCurrentTask(void);
 static void AllLEDsOff(void);
 static void TaskLEDOn(uint8_t WhichTask);
+static void ToggleTaskLED(uint8_t WhichTask);
 static void StartTask1(void);
 static bool PotInRange(uint16_t Pot);
 static void StartTask1Dwell(uint16_t Pot);
@@ -168,23 +178,23 @@ static uint16_t currentStartParam;   // ES_START_TASK param, echoed back
 
 // Task 1
 static Task1State_t Task1State;
-static uint8_t  targetPot;         // level 0..10
+static uint8_t  targetPot;         // level 1..10
 static uint16_t targetPotRaw;      // same target on the ADC scale 0..1023
 // static uint8_t  lastShownPotLevel; // level last sent to the display
 
 // Pre-generated "random" Task 1 targets (levels), one per Task 1.
-//   - every value is 0..10, mapped to the ADC as level * 1023 / 10:
-//       0->0  1->102  2->204  3->306  4->409  5->511
-//       6->613  7->716  8->818  9->920  10->1023
-//   - each of 0..10 appears at least once
+//   - every value is 1..10, mapped to the ADC with POT_LEVEL_TO_RAW():
+//       1->0    2->114  3->227  4->341  5->455
+//       6->568  7->682  8->796  9->909  10->1023
+//   - each of 1..10 appears at least once
 //   - back-to-back values (including last -> first) differ by at least
-//     2 levels: one level is 102 counts, the same as the +/-10% tolerance,
-//     so a 1-level step could be "completed" without moving the pot
+//     2 levels (227 counts), more than the +/-102-count tolerance, so a
+//     repeated Task 1 always needs the pot to move
 // 30 entries is plenty for a 60 s game; regenerate to change the pattern.
 static const uint8_t targetPotOrder[NUM_TASK1_TARGETS] = {
-  2, 0, 7, 1, 10, 4, 7, 4, 6, 2,
-  5, 8, 0, 7, 2, 9, 2, 8, 3, 9,
-  3, 0, 6, 0, 2, 0, 6, 8, 0, 6
+  5, 3, 1, 4, 6, 3, 10, 4, 2, 4,
+  1, 5, 7, 10, 2, 8, 6, 2, 6, 10,
+  4, 2, 9, 6, 3, 8, 3, 8, 4, 1
 };
 static uint8_t targetPotIndex;     // next entry of targetPotOrder
 
@@ -254,7 +264,7 @@ bool InitTaskService(uint8_t Priority)
   Task3State    = TASK3_INACTIVE;
   targetPotIndex = 0;
   targetPot      = targetPotOrder[0];
-  targetPotRaw   = (uint16_t)(((uint32_t)targetPot * POT_FULL_SCALE) / POT_LEVELS);
+  targetPotRaw   = POT_LEVEL_TO_RAW(targetPot);
   targetSwipes  = targetSwipesOrder[0];
   targetSwipesIndex = 0;
   currentSwipes = 0;
@@ -302,7 +312,12 @@ ES_Event_t RunTaskService(ES_Event_t ThisEvent)
   ReturnEvent.EventType = ES_NO_EVENT; // assume no errors
 
   // announce every event this service receives (see EventPrint.h)
-  PrintEvent("TaskService", MyPriority, ThisEvent);
+  // (the LED blink timeouts, 4 per second, are not printed)
+  if (!((ES_TIMEOUT == ThisEvent.EventType) &&
+        (LED_BLINK_TIMER == ThisEvent.EventParam)))
+  {
+    PrintEvent("TaskService", MyPriority, ThisEvent);
+  }
 
   // any pot / beam / switch input counts as user activity, whatever the
   // current task: tell GameService so it restarts its inactiveTimer
@@ -398,6 +413,14 @@ ES_Event_t RunTaskService(ES_Event_t ThisEvent)
 
     case ES_TIMEOUT:
     {
+      if (LED_BLINK_TIMER == ThisEvent.EventParam)   // blink the task LED
+      {
+        if (TASK_IDLE != currentTask)
+        {
+          ToggleTaskLED(currentTask);
+          ES_Timer_InitTimer(LED_BLINK_TIMER, LED_BLINK_TIME);
+        }
+      }
       if (TASK1_DWELL_TIMER == ThisEvent.EventParam)  // Task 1 hold done
       {
         // held in range for TASK1_DWELL_TIME: check once more, then done
@@ -465,7 +488,8 @@ bool QueryTask2Running(void)
 
  Description
      Stops whatever task was running and updates currentTask.
-     Turns every LED off, then turns only the new task's LED on and runs
+     Turns every LED off, then turns only the new task's LED on (and
+     starts it blinking) and runs
      that task's entry action. Task 0 = idle: everything stays off.
 ****************************************************************************/
 static void SetTask(uint8_t NewTask)
@@ -476,6 +500,14 @@ static void SetTask(uint8_t NewTask)
 
   AllLEDsOff();                                 // only one LED at a time
   TaskLEDOn(currentTask);                       // task 0: nothing turns on
+  if (TASK_IDLE != currentTask)
+  {
+    ES_Timer_InitTimer(LED_BLINK_TIMER, LED_BLINK_TIME);   // start blinking
+  }
+  else
+  {
+    ES_Timer_StopTimer(LED_BLINK_TIMER);        // idle: all off, no blink
+  }
 
   switch (currentTask)
   {
@@ -550,16 +582,15 @@ static void StartTask1(void)
   {
     targetPotIndex = 0;                         // wrap: last != first
   }
-  // level 0..10 -> ADC 0..1023 (32-bit math so 10 * 1023 can't overflow)
-  targetPotRaw = (uint16_t)(((uint32_t)targetPot * POT_FULL_SCALE) / POT_LEVELS);
+  targetPotRaw = POT_LEVEL_TO_RAW(targetPot);      // level 1..10 -> 0..1023
   Task1State   = TASK1_WAITING;
 
   DB_printf("targetPot = %d of %d (%d +/- %d)\r\n",
-      targetPot, POT_LEVELS, targetPotRaw, TASK1_TOLERANCE);
+      targetPot, POT_MAX_LEVEL, targetPotRaw, TASK1_TOLERANCE);
   DB_printf("currentPot = %d\r\n", QueryCurrentPot());
   // display: line 1 = task, line 2 = instruction (lines 0 and 3: GameService)
   DisplayLine(1, DISP_GREEN, "TASK 1");
-  DisplayLinef(2, DISP_GREEN, "SET STOVE TO: %d", targetPot);  // level 0..10
+  DisplayLinef(2, DISP_GREEN, "SET STOVE TO: %d", targetPot);  // level 1..10
   // lastShownPotLevel = 0xFF;                          // (current value
   // ShowPotLevel(QueryCurrentPot());                   //  no longer shown)
   ES_Timer_InitTimer(TASK1_PRINT_TIMER, TASK1_PRINT_TIME);
@@ -638,18 +669,35 @@ static void StartTask2(void)
 ****************************************************************************/
 static void StartTask3(void)
 {
+  // what the switches are set to right now
+  uint8_t currentBinary = QueryRockerSwitch();
+  uint8_t tries;
+
   // next pre-generated target; the index is never reset, so consecutive
-  // Task 3s (even across games) always get different targets
-  targetDecimal = targetDecimalOrder[targetDecimalIndex];
-  targetDecimalIndex++;
-  if (targetDecimalIndex >= NUM_TASK3_TARGETS)
+  // Task 3s (even across games) always get different targets.
+  // If a target equals what the switches already show, the task would be
+  // solved without touching anything: skip it and take the next one.
+  // (The list never repeats a value back to back, so one skip is always
+  // enough; the try limit just guarantees the loop ends.)
+  for (tries = 0; tries < NUM_TASK3_TARGETS; tries++)
   {
-    targetDecimalIndex = 0;                     // wrap: last != first
+    targetDecimal = targetDecimalOrder[targetDecimalIndex];
+    targetDecimalIndex++;
+    if (targetDecimalIndex >= NUM_TASK3_TARGETS)
+    {
+      targetDecimalIndex = 0;                   // wrap: last != first
+    }
+    if (targetDecimal != currentBinary)
+    {
+      break;                                    // needs the switches moved
+    }
+    DB_printf("targetDecimal %d skipped: switches already show it\r\n",
+              targetDecimal);
   }
   Task3State    = TASK3_WAITING;
 
   DB_printf("targetDecimal = %d\r\n", targetDecimal);
-  PrintBinary(QueryRockerSwitch());
+  PrintBinary(currentBinary);
   // display: line 1 = task, line 2 = instruction (lines 0 and 3: GameService)
   DisplayLine(1, DISP_GREEN, "TASK 3");
   DisplayLinef(2, DISP_GREEN, "SET BINARY: %d", targetDecimal);
@@ -675,13 +723,13 @@ static void PrintBinary(uint8_t Value)
      ShowPotLevel
 
  Description
-     Display line 2 for Task 1: the pot as a level 0..10 (same scale as
+     Display line 2 for Task 1: the pot as a level 1..10 (same scale as
      targetPot). Only sends when the level changes, so pot movements don't
      flood the SPI link.
 ****************************************************************************/
 // static void ShowPotLevel(uint16_t Pot)
 // {
-//   uint8_t level = (uint8_t)(((uint32_t)Pot * POT_LEVELS + (POT_FULL_SCALE / 2))
+//   uint8_t level = (uint8_t)(((uint32_t)Pot * POT_MAX_LEVEL + (POT_FULL_SCALE / 2))
 //                             / POT_FULL_SCALE);
 //   if (level != lastShownPotLevel)
 //   {
@@ -737,6 +785,33 @@ static void TaskLEDOn(uint8_t WhichTask)
       break;
     case 3:
       LATBbits.LATB10 = LED_ON;
+      break;
+    default:
+      break;
+  }
+}
+
+/****************************************************************************
+ Function
+     ToggleTaskLED
+
+ Description
+     Flips the LED that belongs to WhichTask (on <-> off) for blinking.
+     When on, the pin is fully on: brightness is set by the LED's series
+     resistor, not by the code.
+****************************************************************************/
+static void ToggleTaskLED(uint8_t WhichTask)
+{
+  switch (WhichTask)
+  {
+    case 1:
+      LATBbits.LATB8 = !LATBbits.LATB8;
+      break;
+    case 2:
+      LATBbits.LATB9 = !LATBbits.LATB9;
+      break;
+    case 3:
+      LATBbits.LATB10 = !LATBbits.LATB10;
       break;
     default:
       break;

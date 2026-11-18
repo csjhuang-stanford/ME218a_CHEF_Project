@@ -36,7 +36,7 @@ void main(void)
   //   RB13 (24)        pot, AN11               (Potentiometer.c)
   //   RA4  (12)        servo 1 PWM, OC4        (RA4 can't use OC2)
   //   RB11 (22)        start push button, to GND (StartButton.c)
-  //   RA3  (10)        servo 2 PWM, OC3 (burger dispenser, positional)
+  //   RA3  (10)        servo 2 PWM, OC3 (burger dispenser, continuous rotation)
   //   RB3, RB4, RB2, RB12 rocker switches 1-4 (RockerSwitch.c)
   //   RA2  (9)         spare (SCK can't be remapped to it)
 
@@ -74,8 +74,8 @@ void main(void)
     DB_printf("PWM ERROR: servo 1 channel 4 -> RA4 failed\r\n");
   }
   PWMOperate_SetDutyOnChannel(0, 1);           // buzzer off to start
-  PWMOperate_SetPulseWidthOnChannel(2500, 4);  // servo 1: 2500 ticks @ 2.5 MHz = 1 ms
-  PWMOperate_SetPulseWidthOnChannel(2500, 3);  // servo 2: 1 ms = rest (min)
+  PWMOperate_SetPulseWidthOnChannel(6250, 4);  // servo 1: 2.5 ms = its rest (turns CW from here)
+  PWMOperate_SetPulseWidthOnChannel(1250, 3);  // servo 2 (270 deg): 0.5 ms = 0 deg
 
 
   // now initialize the Events and Services Framework and start it running

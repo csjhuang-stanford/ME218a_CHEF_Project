@@ -52,7 +52,8 @@
                              -> GAME_COMPLETE
 
    GAME_COMPLETE ("Displaying Game Completion Page")
-     ES_START_PRESSED      : -> GAME_WELCOME
+     ES_START_PRESSED      : ES_CLOSE_DISPENSER (both servos -> 0)
+                             -> GAME_WELCOME
 
    Inactivity timer: INACTIVE_TIMER is a single inactiveTimer-second timer,
    started with the game and restarted by every ES_USER_INPUT (pot, beam
@@ -140,7 +141,7 @@ static uint8_t  currentTaskNum;    // task now running (display layout)
 // Time allowed per task, in seconds. Task 3 gets TASK3_TIME_NUM /
 // TASK3_TIME_DEN times this (15 s). Keep every task time below
 // inactiveTimer, and <= 65 s (one 16-bit ms timer).
-static uint16_t taskTimer = 10;
+static uint16_t taskTimer = 5;
 static uint8_t  attempt;           // counts task starts, tags ES_START_TASK
 
 // No user input (pot, beam, switches) for this many seconds ends the game
@@ -339,7 +340,7 @@ ES_Event_t RunGameService(ES_Event_t ThisEvent)
       if (ES_BURGER_DISPENSED == ThisEvent.EventType)
       {
         DB_printf("Burger served! Press START to restart\r\n");
-        DisplayLine(2, DISP_GREEN, "BON APPETIT!");   // only line 2 changes
+        DisplayLine(2, DISP_GREEN, "BON APETITE!");   // only line 2 changes
         gameState = GAME_COMPLETE;
       }
     }
@@ -350,6 +351,7 @@ ES_Event_t RunGameService(ES_Event_t ThisEvent)
     {
       if (ES_START_PRESSED == ThisEvent.EventType)
       {
+        PostToTestHarness(ES_CLOSE_DISPENSER, 0);   // both servos -> 0
         gameState = GAME_WELCOME;
         PrintWelcome();               // entry action of GAME_WELCOME
       }
@@ -409,6 +411,8 @@ static void StartGame(void)
   userScore   = 0;                 // every game starts from 0
   tasksCompleted = 0;
   secondsLeft = gameTimer;
+  // make sure the dispenser is closed (e.g. after the power-up servo test)
+  PostToTestHarness(ES_CLOSE_DISPENSER, 0);
   ES_Timer_InitTimer(GAME_TIMER, ONE_SECOND);
   ES_Timer_InitTimer(INACTIVE_TIMER, (uint16_t)(inactiveTimer * ONE_SECOND));
 

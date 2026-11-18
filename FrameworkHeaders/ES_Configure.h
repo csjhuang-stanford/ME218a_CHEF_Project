@@ -278,6 +278,7 @@ typedef enum
   ES_START_PRESSED,         /* CHEF: start button pressed (StartButton.c -> GameService) */
   ES_BURGER_DISPENSED,      /* CHEF: burger servo back at rest (Service 0 -> GameService) */
   ES_TASK_TIMED_OUT,        /* CHEF: GameService -> Service 0: task ran out of time, beep */
+  ES_CLOSE_DISPENSER,       /* CHEF: GameService -> Service 0: both servos back to 0 */
   ES_USER_INPUT,            /* CHEF: TaskService -> GameService: pot, beam or switch input */
   ES_START_TASK,            /* CHEF: GameService -> TaskService, param = (attempt << 8) | task, task 0 = stop */
   ES_TASK_COMPLETE          /* CHEF: TaskService -> GameService (param = ES_START_TASK param echoed),
@@ -333,7 +334,7 @@ typedef enum
 #define TIMER4_RESP_FUNC TIMER_UNUSED
 #define TIMER5_RESP_FUNC TIMER_UNUSED
 #define TIMER6_RESP_FUNC TIMER_UNUSED
-#define TIMER7_RESP_FUNC TIMER_UNUSED
+#define TIMER7_RESP_FUNC PostTaskService     // CHEF task LED blink
 #define TIMER8_RESP_FUNC PostTaskService     // CHEF Task 1 dwell (hold) timer
 #define TIMER9_RESP_FUNC PostGameService     // CHEF display startup repaint
 #define TIMER10_RESP_FUNC PostTaskService    // CHEF Task 1 print timer
@@ -357,6 +358,7 @@ typedef enum
 #define INACTIVE_TIMER 15     // CHEF: no-user-input limit (inactiveTimer)
 #define TASK1_PRINT_TIMER 10  // CHEF Task 1: periodic currentPot print
 #define TASK1_DWELL_TIMER 8   // CHEF Task 1: pot must stay in range this long
+#define LED_BLINK_TIMER 7     // CHEF: blinks the current task LED
 #define BUZZER_TIMER 13       // 1 s task-complete beep
 #define SERVO_MOVE_TIMER 14   // Jay: pot -> servo update
 

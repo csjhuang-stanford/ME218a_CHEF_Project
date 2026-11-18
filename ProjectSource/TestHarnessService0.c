@@ -54,8 +54,9 @@
 #define TWO_SEC (ONE_SEC * 2)
 #define FIVE_SEC (ONE_SEC * 5)
 #define BEEP_FREQ     2000     // Hz, "task complete" beep
-#define BEEP_DURATION 500     // ms (1 second)
-#define TIMEOUT_BEEP_FREQ 400  // Hz, lower "time's up, next task" beep
+#define BEEP_DURATION 1000     // ms (1 second)
+#define TIMEOUT_BEEP_FREQ 400  // Hz, low "time's up, next task" beep
+                               // (over 2 octaves below BEEP_FREQ)
                                // (set to BEEP_FREQ for the same sound)
 // 1 = show the framework test-harness prints (banner, key echo, timer
 // announcements), 0 = hide them so only the game prints show
@@ -66,21 +67,40 @@
 // Servo pulse widths in PWM ticks (2.5 MHz: 2500 = 1 ms)
 
 // PWM channels (see main.c)
-#define SERVO1_CHANNEL     4      // OC4 on RA4, positional
-#define SERVO2_CHANNEL     3      // OC3 on RA3, positional ("burger" servo)
+#define SERVO1_CHANNEL     4      // OC4 on RA4, 0-270 deg positional
+#define SERVO2_CHANNEL     3      // OC3 on RA3, 0-270 deg positional
 
-// Servo 1 (RA4, positional) rests at one end. When Task 3 completes it
-// sweeps min -> max, holds briefly, then sweeps max -> min at the same
-// pace (SERVO_SWEEP_STEP both ways) back to rest.
-#define SERVO1_TASK        3      // completing this task triggers the sweep
-#define SERVO_MIN_PULSE    2500   // 1.0 ms = one end (rest)
-#define SERVO_MAX_PULSE    5000   // 2.0 ms = other end
-#define SERVO_SWEEP_STEP   3      // ticks per 1 ms update: ~0.8 s end to end
-#define SERVO1_HOLD_TIME   500    // ms to hold at max before returning
+// Game-completion dispense sequence (both servos are 0-270 deg):
+//   1. first servo  0 -> 90 deg, then stays there
+//   2. pause DISPENSE_PAUSE_TIME (3 s)
+//   3. second servo 0 -> 270 deg, then stays there
+//   4. post ES_BURGER_DISPENSED to GameService (unlocks restart)
+//   5. on ES_CLOSE_DISPENSER (back to the welcome page, or a new game
+//      starts) both servos return to 0 deg
+#define FIRST_SERVO_CHANNEL   SERVO1_CHANNEL   // RA4, moves first
+#define SECOND_SERVO_CHANNEL  SERVO2_CHANNEL   // RA3, moves second
 
-// Servo 2 (RA3, positional) rests at min. When the whole game is completed
-// it sweeps min -> max, holds SERVO2_HOLD_TIME, sweeps max -> min.
-#define SERVO2_HOLD_TIME   3000   // ms to hold at max ("dispensing")
+// 270-degree servos usually need 0.5-2.5 ms for full travel (check the
+// datasheet; with 1-2 ms they only turn about half way)
+#define SERVO_MIN_PULSE    1250   // 0.5 ms = 0 deg (second servo's rest)
+#define SERVO_MAX_PULSE    6250   // 2.5 ms = 270 deg (second servo's target)
+// First servo turns CLOCKWISE 117 deg (90 deg + 30%). On this servo a longer pulse turns
+// it counter-clockwise, so to go clockwise it rests at the 2.5 ms end and
+// moves to a SHORTER pulse: 117 deg = 2.0 ms * 117 / 270 = 0.867 ms less.
+// (To go counter-clockwise again: rest 1250, target 2917.)
+#define FIRST_REST_PULSE   6250   // 2.5 ms: first servo's "0" (rest)
+#define FIRST_TARGET_PULSE 4083   // 6250 - 2167 = 117 deg clockwise from rest
+                                  // (90 deg + 30%; 90 deg would be 4583)
+#define FIRST_SWEEP_STEP   3      // first servo: ticks per 1 ms, ~0.6 s to 90 deg
+#define SECOND_SWEEP_STEP  2      // second servo: ticks per 1 ms, ~2.5 s
+                                  // (smaller = slower)
+
+#define DISPENSE_PAUSE_TIME 3000  // ms between first and second servo
+
+// Task 3 completion: the second servo sweeps 0 -> 180 deg and straight back
+// 180 -> 0 deg (no pause). 180 deg = 0.5 ms + 2.0 ms * 180 / 270 = 1.833 ms
+#define TASK3_SWEEP_PULSE  4583   // 180 deg on the 0.5-2.5 ms 270-deg servo
+#define TASK3_SWEEP_STEP   SECOND_SWEEP_STEP   // same pace: ~1.7 s each way
 
 // Test: 1 = both servos do their motion once right after power-up, so you
 // can check wiring and power without playing a whole game. Set back to 0.
@@ -113,47 +133,54 @@ static uint8_t MyPriority;
 static ES_Event_t DeferralQueue[3 + 1];
 
 
-// Servo 1 one-shot sweep (triggered by Task 3 completion)
+// Game-completion dispense sequence (see the defines above)
 typedef enum
 {
-  SERVO1_RESTING = 0,              // parked at SERVO_MIN_PULSE
-  SERVO1_SWEEPING,                 // moving min -> max
-  SERVO1_HOLDING,                  // at max, waiting before return
-  SERVO1_SWEEPING_DOWN             // moving max -> min, same pace
-} Servo1State_t;
+  DISPENSE_IDLE = 0,               // both servos parked at 0 deg
+  DISPENSE_FIRST_UP,               // first servo 0 -> 90 deg
+  DISPENSE_PAUSE,                  // first at 90, wait DISPENSE_PAUSE_TIME
+  DISPENSE_SECOND_UP,              // second servo 0 -> 270
+  DISPENSE_OPEN,                   // first holds 90, second holds 270
+  DISPENSE_CLOSING,                // both back to 0 deg
+  DISPENSE_TASK3_UP,               // Task 3 done: second servo 0 -> 180
+  DISPENSE_TASK3_DOWN              //   then straight back 180 -> 0
+} DispenseState_t;
 
-static Servo1State_t Servo1State = SERVO1_RESTING;
-static uint16_t      Servo1Pulse = SERVO_MIN_PULSE;
-static uint16_t      Servo1HoldCount;
+static DispenseState_t DispenseState = DISPENSE_IDLE;
+static uint16_t        FirstPulse    = FIRST_REST_PULSE;
+static uint16_t        SecondPulse   = SERVO_MIN_PULSE;
+static uint16_t        DispenseCount;   // ms counter for the pause
 
-// start one min -> max sweep (restarts it if already moving)
-static void StartServo1Sweep(void)
-{
-  Servo1Pulse = SERVO_MIN_PULSE;
-  Servo1State = SERVO1_SWEEPING;
-}
-
-// Servo 2 burger dispense (triggered by game completion)
-typedef enum
-{
-  SERVO2_RESTING = 0,              // parked at SERVO_MIN_PULSE
-  SERVO2_SWEEPING_UP,              // moving min -> max
-  SERVO2_HOLDING,                  // at max for SERVO2_HOLD_TIME
-  SERVO2_SWEEPING_DOWN             // moving max -> min
-} Servo2State_t;
-
-static Servo2State_t Servo2State = SERVO2_RESTING;
-static uint16_t      Servo2Pulse = SERVO_MIN_PULSE;
-static uint16_t      Servo2HoldCount;
-
-// start the dispense: min -> max, hold, max -> min
-static void StartServo2Dispense(void)
+// start the sequence (restarts it if already running)
+static void StartDispense(void)
 {
   DB_printf("Dispensing Burger!\r\n");
   // display: GameService's completion page already shows
-  // "SERVING BURGER..." on line 2 while the servo moves
-  Servo2Pulse = SERVO_MIN_PULSE;
-  Servo2State = SERVO2_SWEEPING_UP;
+  // "SERVING BURGER..." on line 2 while the servos move
+  // (SecondPulse is not reset here: if a Task 3 sweep is still running it
+  // glides back to 0 during the first servo's move and the pause)
+  FirstPulse    = FIRST_REST_PULSE;
+  DispenseState = DISPENSE_FIRST_UP;
+}
+
+// Task 3 completed: second servo 0 -> 180 -> 0. Only from rest, so it never
+// interrupts the game-completion sequence.
+static void StartTask3Sweep(void)
+{
+  if (DISPENSE_IDLE == DispenseState)
+  {
+    DispenseState = DISPENSE_TASK3_UP;
+  }
+}
+
+// back to the welcome page (or a new game starts): both servos to 0 deg.
+// Nothing to do if they are already at rest.
+static void CloseDispenser(void)
+{
+  if ((FirstPulse != FIRST_REST_PULSE) || (SecondPulse != SERVO_MIN_PULSE))
+  {
+    DispenseState = DISPENSE_CLOSING;
+  }
 }
 
 /*----------------------------- Buzzer beep -------------------------------*/
@@ -235,87 +262,56 @@ static void StopBeep(void)
 
 /*------------------------- Jay: pot -> servo -----------------------------*/
 // Servo 1 = PWM channel 4 on RA4, servo 2 = channel 3 on RA3 (Timer3, 50 Hz)
+// one sweep step toward Target; returns true once it is there
+static bool StepToward(uint16_t *pPulse, uint16_t Target, uint16_t Step)
+{
+  if (*pPulse < Target)
+  {
+    *pPulse = ((Target - *pPulse) <= Step) ? Target : (uint16_t)(*pPulse + Step);
+  }
+  else if (*pPulse > Target)
+  {
+    *pPulse = ((*pPulse - Target) <= Step) ? Target : (uint16_t)(*pPulse - Step);
+  }
+  return (*pPulse == Target);
+}
+
 static void moveServo(void)
 {
-  // Servo 1 (channel 4, RA4): only moves after Task 3 completes
-  switch (Servo1State)
+  // called every 1 ms: one step of the dispense sequence
+  switch (DispenseState)
   {
-    case SERVO1_SWEEPING:
+    case DISPENSE_FIRST_UP:
     {
-      Servo1Pulse += SERVO_SWEEP_STEP;
-      if (Servo1Pulse >= SERVO_MAX_PULSE)
+      // second servo back to 0 if a Task 3 sweep was still running
+      StepToward(&SecondPulse, SERVO_MIN_PULSE, SECOND_SWEEP_STEP);
+      if (StepToward(&FirstPulse, FIRST_TARGET_PULSE, FIRST_SWEEP_STEP))
       {
-        Servo1Pulse     = SERVO_MAX_PULSE;
-        Servo1HoldCount = 0;
-        Servo1State     = SERVO1_HOLDING;
+        DispenseCount = 0;                 // first servo stays at 270
+        DispenseState = DISPENSE_PAUSE;
       }
     }
     break;
 
-    case SERVO1_HOLDING:   // let the servo physically reach the end
+    case DISPENSE_PAUSE:
     {
-      if (++Servo1HoldCount >= SERVO1_HOLD_TIME)
+      StepToward(&SecondPulse, SERVO_MIN_PULSE, SECOND_SWEEP_STEP);
+      if (++DispenseCount >= DISPENSE_PAUSE_TIME)
       {
-        Servo1State = SERVO1_SWEEPING_DOWN;   // return smoothly
+        DispenseState = DISPENSE_SECOND_UP;
       }
     }
     break;
 
-    case SERVO1_SWEEPING_DOWN:   // same step size as the way up
+    case DISPENSE_SECOND_UP:
     {
-      if (Servo1Pulse <= (SERVO_MIN_PULSE + SERVO_SWEEP_STEP))
+      if (StepToward(&SecondPulse, SERVO_MAX_PULSE, SECOND_SWEEP_STEP))
       {
-        Servo1Pulse = SERVO_MIN_PULSE;    // back at rest
-        Servo1State = SERVO1_RESTING;
-      }
-      else
-      {
-        Servo1Pulse -= SERVO_SWEEP_STEP;
-      }
-    }
-    break;
-
-    default:               // SERVO1_RESTING
-    {
-      Servo1Pulse = SERVO_MIN_PULSE;
-    }
-    break;
-  }
-  PWMOperate_SetPulseWidthOnChannel(Servo1Pulse, SERVO1_CHANNEL);
-
-  // Servo 2 (channel 3, RA3): only moves when the game is completed
-  switch (Servo2State)
-  {
-    case SERVO2_SWEEPING_UP:
-    {
-      Servo2Pulse += SERVO_SWEEP_STEP;
-      if (Servo2Pulse >= SERVO_MAX_PULSE)
-      {
-        Servo2Pulse     = SERVO_MAX_PULSE;
-        Servo2HoldCount = 0;
-        Servo2State     = SERVO2_HOLDING;
-      }
-    }
-    break;
-
-    case SERVO2_HOLDING:
-    {
-      if (++Servo2HoldCount >= SERVO2_HOLD_TIME)
-      {
-        Servo2State = SERVO2_SWEEPING_DOWN;
-      }
-    }
-    break;
-
-    case SERVO2_SWEEPING_DOWN:
-    {
-      if (Servo2Pulse <= (SERVO_MIN_PULSE + SERVO_SWEEP_STEP))
-      {
-        Servo2Pulse = SERVO_MIN_PULSE;
-        Servo2State = SERVO2_RESTING;
+        DispenseState = DISPENSE_OPEN;     // both stay at 270
         DB_printf("Burger Dispensed!\r\n");
-        // opening + hold + closing done: tell GameService, which unlocks
-        // the restart button and shows "BON APETITE!"
+
+        // sequence done: tell GameService, which unlocks the restart
+        // button and shows "BON APETITE!"
         {
           ES_Event_t DoneEvent;
           DoneEvent.EventType  = ES_BURGER_DISPENSED;
@@ -323,20 +319,54 @@ static void moveServo(void)
           PostGameService(DoneEvent);
         }
       }
-      else
+    }
+    break;
+
+    case DISPENSE_OPEN:        // hold 90 / 270 until ES_CLOSE_DISPENSER
+    {
+      FirstPulse  = FIRST_TARGET_PULSE;
+      SecondPulse = SERVO_MAX_PULSE;
+    }
+    break;
+
+    case DISPENSE_CLOSING:     // both back to 0, each at its own pace
+    {
+      bool firstDone  = StepToward(&FirstPulse,  FIRST_REST_PULSE, FIRST_SWEEP_STEP);
+      bool secondDone = StepToward(&SecondPulse, SERVO_MIN_PULSE, SECOND_SWEEP_STEP);
+      if (firstDone && secondDone)
       {
-        Servo2Pulse -= SERVO_SWEEP_STEP;
+        DispenseState = DISPENSE_IDLE;
       }
     }
     break;
 
-    default:               // SERVO2_RESTING
+    case DISPENSE_TASK3_UP:    // Task 3 sweep: 0 -> 180 deg
     {
-      Servo2Pulse = SERVO_MIN_PULSE;
+      if (StepToward(&SecondPulse, TASK3_SWEEP_PULSE, TASK3_SWEEP_STEP))
+      {
+        DispenseState = DISPENSE_TASK3_DOWN;   // no pause at the top
+      }
+    }
+    break;
+
+    case DISPENSE_TASK3_DOWN:  // Task 3 sweep: 180 -> 0 deg
+    {
+      if (StepToward(&SecondPulse, SERVO_MIN_PULSE, TASK3_SWEEP_STEP))
+      {
+        DispenseState = DISPENSE_IDLE;
+      }
+    }
+    break;
+
+    default:                   // DISPENSE_IDLE: both parked at 0 deg
+    {
+      FirstPulse  = FIRST_REST_PULSE;
+      SecondPulse = SERVO_MIN_PULSE;
     }
     break;
   }
-  PWMOperate_SetPulseWidthOnChannel(Servo2Pulse, SERVO2_CHANNEL);
+  PWMOperate_SetPulseWidthOnChannel(FirstPulse,  FIRST_SERVO_CHANNEL);
+  PWMOperate_SetPulseWidthOnChannel(SecondPulse, SECOND_SERVO_CHANNEL);
 }
 
 /*------------------------------ Module Code ------------------------------*/
@@ -470,9 +500,8 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
     {
       ES_Timer_InitTimer(SERVO_MOVE_TIMER, ONE_SEC);   // Jay: start servo updates
 #if SERVO_POWERUP_TEST
-      DB_printf("SERVO TEST: servo 1 sweep + servo 2 dispense\r\n");
-      StartServo1Sweep();
-      StartServo2Dispense();
+      DB_printf("SERVO TEST: dispense sequence\r\n");
+      StartDispense();
 #endif
       PWMOperate_SetDutyOnChannel(0, 1);   // buzzer silent until a task completes
 #if SHOW_DEBUG_PRINTS
@@ -507,18 +536,23 @@ ES_Event_t RunTestHarnessService0(ES_Event_t ThisEvent)
       StartTimeoutBeep();
     }
     break;
+    case ES_CLOSE_DISPENSER: // left the completion page / new game
+    {
+      CloseDispenser();
+    }
+    break;
     case ES_GAME_OVER:       // whole game completed: long beep + burger
     {
       StartLongBeep();
-      StartServo2Dispense();
+      StartDispense();         // both servos: game-completion sequence
     }
     break;
     case ES_TASK_COMPLETE:   // any task finished: one 1 s beep
     {
       StartBeep();
-      if (SERVO1_TASK == ThisEvent.EventParam)
+      if (3 == ThisEvent.EventParam)   // Task 3: second servo 0->180->0
       {
-        StartServo1Sweep();  // Task 3 done: servo 1 sweeps min -> max once
+        StartTask3Sweep();
       }
     }
     break;
